@@ -1,1 +1,840 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Substation SLD Simulator of S&D-4 Rajshahi</title>
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --panel-bg: #ffffff;
+            --border-color: #cbd5e1;
+            --text-color: #0f172a;
+            --primary-color: #2563eb;
+            --energized-color: #e11d48;
+            --deenergized-color: #0f172a;
+            --status-on: #10b981;
+            --status-off: #64748b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            display: flex;
+            height: 100vh;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overflow: hidden;
+            position: relative;
+        }
+
+       
+        #sidebar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 320px;
+            background-color: var(--panel-bg);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            z-index: 20;
+            box-shadow: 4px 0 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        #sidebar.collapsed {
+            transform: translateX(-100%);
+        }
+
+        .sidebar-header {
+            padding: 16px;
+            background: #1e293b;
+            color: #ffffff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sidebar-header h2 {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .sidebar-close-btn {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .sidebar-close-btn:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .toggle-sidebar-btn {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            z-index: 10;
+            background: #1e293b;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .toggle-sidebar-btn:hover {
+            background: #334155;
+        }
+
+        .global-controls {
+            padding: 12px 16px;
+            background: #f1f5f9;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .btn:hover {
+            background: #e2e8f0;
+        }
+
+        .search-box {
+            padding: 8px 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 6px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            outline: none;
+            font-size: 0.85rem;
+        }
+
+        .controls-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px 16px;
+        }
+
+        .control-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .control-label {
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 22px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: var(--status-off);
+            transition: .3s;
+            border-radius: 22px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--status-on);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(22px);
+        }
+
+        #main-view {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            background-color: #ffffff;
+            cursor: grab;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        #main-view:active {
+            cursor: grabbing;
+        }
+
+        #sld-svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .overlay-controls {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            z-index: 5;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 4px;
+            border-radius: 2px;
+        }
+
+        .sld-line {
+            stroke: var(--deenergized-color);
+            stroke-width: 3;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            fill: none;
+            transition: stroke 0.3s ease;
+        }
+
+        .sld-line.energized {
+            stroke: var(--energized-color);
+        }
+
+        .terminal-arrow {
+            fill: none;
+            stroke: var(--deenergized-color);
+            stroke-width: 2.5;
+            transition: stroke 0.3s ease;
+        }
+
+        .terminal-arrow.energized {
+            stroke: var(--energized-color);
+        }
+
+        .comp-interactive {
+            cursor: pointer;
+        }
+
+        .comp-interactive:hover circle,
+        .comp-interactive:hover rect {
+            stroke-width: 2.5px;
+            filter: drop-shadow(0 0 3px rgba(37, 99, 235, 0.5));
+        }
+
+        .status-indicator {
+            transition: fill 0.3s ease;
+        }
+
+        .status-on { fill: var(--status-on) !important; }
+        .status-off { fill: var(--status-off) !important; }
+
+        @keyframes flowAnimation {
+            from { stroke-dashoffset: 20; }
+            to { stroke-dashoffset: 0; }
+        }
+
+        .animated-flow {
+            stroke: #ffffff;
+            stroke-width: 2;
+            stroke-dasharray: 5, 5;
+            fill: none;
+            opacity: 0;
+        }
+
+        .energized + .animated-flow {
+            opacity: 0.9;
+            animation: flowAnimation 0.8s linear infinite;
+        }
+
+        .label-bg {
+            fill: #ffffff;
+            stroke: #cbd5e1;
+            stroke-width: 1;
+            rx: 3;
+            ry: 3;
+        }
+
+        .label-text {
+            font-size: 11px;
+            font-weight: 700;
+            fill: #0f172a;
+            text-anchor: middle;
+            dominant-baseline: central;
+        }
+    </style>
+</head>
+<body>
+
+    <button class="toggle-sidebar-btn" onclick="toggleSidebar()">
+        ☰ SLD Controls
+    </button>
+
+    <div id="sidebar" class="collapsed">
+        <div class="sidebar-header">
+            <h2>SLD Control Panel</h2>
+            <button class="sidebar-close-btn" onclick="toggleSidebar()">✕</button>
+        </div>
+        <div class="global-controls">
+            <button class="btn btn-primary" onclick="toggleAll(true)">All ON</button>
+            <button class="btn" onclick="toggleAll(false)">All OFF</button>
+            <button class="btn" onclick="resetView()">Reset View</button>
+        </div>
+        <div class="search-box">
+            <input type="text" id="switch-search" placeholder="Search switch..." onkeyup="filterSwitches()">
+        </div>
+        <div class="controls-list" id="controls-container"></div>
+    </div>
+
+    <div id="main-view">
+        <div class="overlay-controls">
+            <div class="legend-item">
+                <div class="legend-color" style="background: var(--deenergized-color);"></div>
+                De-energized
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: var(--energized-color);"></div>
+                Energized Line
+            </div>
+            <div class="legend-item">
+                <div style="width:10px; height:10px; border-radius:50%; background:var(--status-on)"></div>
+                CLOSED / ON
+            </div>
+            <div class="legend-item">
+                <div style="width:10px; height:10px; border-radius:50%; background:var(--status-off)"></div>
+                OPEN / OFF
+            </div>
+        </div>
+
+        <svg id="sld-svg" viewBox="0 0 1600 1150">
+            <defs>
+                <marker id="arrow-red" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse">
+                    <path d="M 0 1 L 10 5 L 0 9 z" fill="#e11d48"/>
+                </marker>
+            </defs>
+            <g id="viewport">
+                <g id="lines-layer"></g>
+                <g id="components-layer"></g>
+            </g>
+        </svg>
+    </div>
+
+    <script>
+        const componentsData = {
+            'H':  { id: 'H',  name: 'H Horogram SS', type: 'source', state: false, x: 100, y: 380 },
+            'T':  { id: 'T',  name: 'T Talaimari SS', type: 'source', state: false, x: 530, y: 380 },
+            'G2': { id: 'G2', name: 'G2 Miapur SS', type: 'source', state: false, x: 100, y: 80 },
+            'S':  { id: 'S',  name: 'S Shalbagan SS', type: 'source', state: false, x: 1250, y: 80 },
+            'G1': { id: 'G1', name: 'G1 Katakhali SS', type: 'source', state: false, x: 1250, y: 240 },
+
+            '49': { id: '49', name: '49 Miapur SS Bindur Mor Isolator', type: 'load_break', state: false, x: 190, y: 80 },
+            '50': { id: '50', name: '50 Miapur SS City Central Isolator', type: 'load_break', state: false, x: 190, y: 137 },
+
+            '24': { id: '24', name: '24 Bondho Gate Isolator', type: 'load_break', state: false, x: 320, y: 80 },
+            '22': { id: '22', name: '22 Shalbagan Isolator', type: 'load_break', state: false, x: 950, y: 80 },
+            '21': { id: '21', name: '21 Beliful Isolator', type: 'load_break', state: false, x: 1040, y: 137 },
+            
+            '23': { id: '23', name: '23 Guard Room Isolator', type: 'load_break', state: false, x: 710, y: 180 },
+
+            '47': { id: '47', name: '47 Katakhali SS City Central Isolator', type: 'load_break', state: false, x: 1135, y: 137 },
+            '48': { id: '48', name: '48 Katakhali SS Bindur Mor Isolator', type: 'load_break', state: false, x: 1135, y: 240 },
+
+            '28': { id: '28', name: '28 City Central SS Horogram Isolator', type: 'load_break', state: false, x: 190, y: 240 },
+            '27': { id: '27', name: '27 City Central SS Miapur Isolator', type: 'load_break', state: false, x: 270, y: 240 },
+            '26': { id: '26', name: '26 City Central SS Katakhali Isolator', type: 'load_break', state: false, x: 380, y: 240 },
+            '25': { id: '25', name: '25 City Central SS Talaimari Isolator', type: 'load_break', state: false, x: 460, y: 240 },
+            '2':  { id: '2',  name: '2 Bindur Mor SS Miapur Isolator', type: 'load_break', state: false, x: 760, y: 240 },
+            '1':  { id: '1',  name: '1 Bindur Mor SS Katakhali Isolator', type: 'load_break', state: false, x: 890, y: 240 },
+
+            '29': { id: '29', name: '29 33 KV Bus Coupler', type: 'load_break', state: false, x: 325, y: 305 },
+
+            '30': { id: '30', name: '30 T1 Isolator', type: 'load_break', state: false, x: 270, y: 370 },
+            '31': { id: '31', name: '31 T2 Isolator', type: 'load_break', state: false, x: 380, y: 370 },
+            '4':  { id: '4',  name: '4 T2 Isolator', type: 'load_break', state: false, x: 760, y: 370 },
+            '5':  { id: '5',  name: '5 T1 Isolator', type: 'load_break', state: false, x: 890, y: 370 },
+
+            '3':  { id: '3',  name: '3 33 KV Bus Coupler', type: 'load_break', state: false, x: 825, y: 305 },
+
+            '32': { id: '32', name: '32 T1 Circuit Breaker', type: 'transformer', state: false, x: 270, y: 440 },
+            '33': { id: '33', name: '33 T2 Circuit Breaker', type: 'transformer', state: false, x: 380, y: 440 },
+            '6':  { id: '6',  name: '6 T2 Circuit Breaker', type: 'transformer', state: false, x: 760, y: 440 },
+            '7':  { id: '7',  name: '7 T1 Circuit Breaker', type: 'transformer', state: false, x: 890, y: 440 },
+
+            '34': { id: '34', name: '34 11 KV Incomer-1 Isolator', type: 'load_break', state: false, x: 270, y: 510 },
+            '35': { id: '35', name: '35 11 KV Incomer-2 Isolator', type: 'load_break', state: false, x: 380, y: 510 },
+            '8':  { id: '8',  name: '8 11 KV Incomer-2 Isolator', type: 'load_break', state: false, x: 760, y: 510 },
+            '9':  { id: '9',  name: '9 11 KV Incomer-1 Isolator', type: 'load_break', state: false, x: 890, y: 510 },
+
+            '36': { id: '36', name: '36 11 KV Incomer-1 Circuit Breaker', type: 'transformer', state: false, x: 270, y: 580 },
+            '37': { id: '37', name: '37 11 KV Incomer-2 Circuit Breaker', type: 'transformer', state: false, x: 380, y: 580 },
+            '10': { id: '10', name: '10 11 KV Incomer-2 Circuit Breaker', type: 'transformer', state: false, x: 760, y: 580 },
+            '11': { id: '11', name: '11 11 KV Incomer-1 Circuit Breaker', type: 'transformer', state: false, x: 890, y: 580 },
+
+            '38': { id: '38', name: '38 11 KV Bus Coupler', type: 'load_break', state: false, x: 325, y: 670 },
+            '12': { id: '12', name: '12 11 KV Bus Coupler', type: 'load_break', state: false, x: 825, y: 670 },
+
+            '39': { id: '39', name: '39 Feeder Isolator', type: 'load_break', state: false, x: 190, y: 720 },
+            '40': { id: '40', name: '40 Feeder Isolator', type: 'load_break', state: false, x: 280, y: 720 },
+            '41': { id: '41', name: '41 Feeder Isolator', type: 'load_break', state: false, x: 370, y: 720 },
+            '42': { id: '42', name: '42 Feeder Isolator', type: 'load_break', state: false, x: 460, y: 720 },
+            '13': { id: '13', name: '13 Feeder Isolator', type: 'load_break', state: false, x: 690, y: 720 },
+            '14': { id: '14', name: '14 Feeder Isolator', type: 'load_break', state: false, x: 780, y: 720 },
+            '15': { id: '15', name: '15 Feeder Isolator', type: 'load_break', state: false, x: 870, y: 720 },
+            '16': { id: '16', name: '16 Feeder Isolator', type: 'load_break', state: false, x: 960, y: 720 },
+
+            '43': { id: '43', name: '43 Feeder Circuit Breaker', type: 'transformer', state: false, x: 190, y: 785 },
+            '44': { id: '44', name: '44 Feeder Circuit Breaker', type: 'transformer', state: false, x: 280, y: 785 },
+            '45': { id: '45', name: '45 Feeder Circuit Breaker', type: 'transformer', state: false, x: 370, y: 785 },
+            '46': { id: '46', name: '46 Feeder Circuit Breaker', type: 'transformer', state: false, x: 460, y: 785 },
+            '17': { id: '17', name: '17 Feeder Circuit Breaker', type: 'transformer', state: false, x: 690, y: 785 },
+            '18': { id: '18', name: '18 Feeder Circuit Breaker', type: 'transformer', state: false, x: 780, y: 785 },
+            '19': { id: '19', name: '19 Feeder Circuit Breaker', type: 'transformer', state: false, x: 870, y: 785 },
+            '20': { id: '20', name: '20 Feeder Circuit Breaker', type: 'transformer', state: false, x: 960, y: 785 },
+        };
+
+        const connectionsData = [
+            { id: 'c-g2-49', u: 'G2', v: '49', path: 'M 130 80 L 177 80' },
+            { id: 'c-49-24', u: '49', v: '24', path: 'M 203 80 L 307 80' },
+
+            { id: 'c-g2-50', u: 'G2', v: '50', path: 'M 130 80 L 150 80 L 150 137 L 177 137' },
+            { id: 'c-50-27', u: '50', v: '27', path: 'M 203 137 L 270 137 L 270 227' },
+
+            { id: 'c-24-node', u: '24', v: 'NODE_TOP', path: 'M 333 80 L 760 80' },
+            { id: 'c-node-22', u: 'NODE_TOP', v: '22', path: 'M 760 80 L 937 80' },
+            { id: 'c-22-s',    u: '22', v: 'S',  path: 'M 963 80 L 1220 80' },
+
+            { id: 'c-top-line2', u: 'NODE_TOP', v: 'LINE2_BUS', path: 'M 760 80 L 760 227' },
+            { id: 'c-line2-2', u: 'LINE2_BUS', v: '2', path: 'M 760 227 L 760 227' },
+
+            { id: 'c-26-21-bus', u: 'NODE_21_26', v: '21', path: 'M 380 137 L 1027 137' },
+            { id: 'c-bus26-26', u: 'NODE_21_26', v: '26', path: 'M 380 137 L 380 227' },
+
+            { id: 'c-bus2126-23', u: 'NODE_21_26', v: '23', path: 'M 710 137 L 710 167' },
+
+            { id: 'c-23-line2', u: '23', v: 'LINE2_BUS', path: 'M 710 193 L 710 215 L 760 215' },
+
+            { id: 'c-g1-47', u: 'G1', v: '47', path: 'M 1220 240 L 1180 240 L 1180 137 L 1148 137' },
+            { id: 'c-47-21', u: '47', v: '21', path: 'M 1122 137 L 1053 137' },
+
+            { id: 'c-g1-48', u: 'G1', v: '48', path: 'M 1220 240 L 1148 240' },
+            { id: 'c-48-1',  u: '48', v: '1',  path: 'M 1122 240 L 890 240' },
+
+            { id: 'c-h-28',  u: 'H',  v: '28', path: 'M 100 360 L 100 200 L 190 200 L 190 227' },
+            { id: 'c-t-25',  u: 'T',  v: '25', path: 'M 530 360 L 530 200 L 460 200 L 460 227' },
+
+            { id: 'c-28-j',  u: '28', v: 'JU1', path: 'M 190 253 L 190 305 L 270 305' },
+            { id: 'c-27-j',  u: '27', v: 'JU1', path: 'M 270 253 L 270 305' },
+            { id: 'c-26-j',  u: '26', v: 'JU2', path: 'M 380 253 L 380 305' },
+            { id: 'c-25-j',  u: '25', v: 'JU2', path: 'M 460 253 L 460 305 L 380 305' },
+
+            { id: 'c-ju1-29', u: 'JU1', v: '29', path: 'M 270 305 L 312 305' },
+            { id: 'c-ju2-29', u: 'JU2', v: '29', path: 'M 380 305 L 338 305' },
+
+            { id: 'c-ju1-30', u: 'JU1', v: '30', path: 'M 270 305 L 270 357' },
+            { id: 'c-ju2-31', u: 'JU2', v: '31', path: 'M 380 305 L 380 357' },
+
+            { id: 'c-2-bus24',  u: '2',        v: 'BUS_2_4', path: 'M 760 253 L 760 305' },
+            { id: 'c-1-bus15',  u: '1',        v: 'BUS_1_5', path: 'M 890 253 L 890 305' },
+            { id: 'c-bus24-3',  u: 'BUS_2_4',  v: '3',       path: 'M 760 305 L 812 305' },
+            { id: 'c-bus15-3',  u: 'BUS_1_5',  v: '3',       path: 'M 890 305 L 838 305' },
+            { id: 'c-bus24-4',  u: 'BUS_2_4',  v: '4',       path: 'M 760 305 L 760 357' },
+            { id: 'c-bus15-5',  u: 'BUS_1_5',  v: '5',       path: 'M 890 305 L 890 357' },
+
+            { id: 'c-30-32', u: '30', v: '32', path: 'M 270 383 L 270 427' },
+            { id: 'c-31-33', u: '31', v: '33', path: 'M 380 383 L 380 427' },
+            { id: 'c-4-6',   u: '4',  v: '6',  path: 'M 760 383 L 760 427' },
+            { id: 'c-5-7',   u: '5',  v: '7',  path: 'M 890 383 L 890 427' },
+
+            { id: 'c-32-34', u: '32', v: '34', path: 'M 270 453 L 270 497' },
+            { id: 'c-33-35', u: '33', v: '35', path: 'M 380 453 L 380 497' },
+            { id: 'c-6-8',   u: '6',  v: '8',  path: 'M 760 453 L 760 497' },
+            { id: 'c-7-9',   u: '7',  v: '9',  path: 'M 890 453 L 890 497' },
+
+            { id: 'c-34-36', u: '34', v: '36', path: 'M 270 523 L 270 567' },
+            { id: 'c-35-37', u: '35', v: '37', path: 'M 380 523 L 380 567' },
+            { id: 'c-8-10',  u: '8',  v: '10', path: 'M 760 523 L 760 567' },
+            { id: 'c-9-11',  u: '9',  v: '11', path: 'M 890 523 L 890 567' },
+
+            { id: 'c-36-busu1', u: '36', v: 'BUS_U_LEFT', path: 'M 270 593 L 270 670' },
+            { id: 'c-37-busu2', u: '37', v: 'BUS_U_RIGHT', path: 'M 380 593 L 380 670' },
+
+            { id: 'c-busu-left',  u: 'BUS_U_LEFT',  v: '38', path: 'M 190 670 L 312 670' },
+            { id: 'c-busu-right', u: '38', v: 'BUS_U_RIGHT', path: 'M 338 670 L 460 670' },
+
+            { id: 'c-10-busl1', u: '10', v: 'BUS_L_LEFT', path: 'M 760 593 L 760 670' },
+            { id: 'c-11-busl2', u: '11', v: 'BUS_L_RIGHT', path: 'M 890 593 L 890 670' },
+
+            { id: 'c-busl-left',  u: 'BUS_L_LEFT',  v: '12', path: 'M 690 670 L 812 670' },
+            { id: 'c-busl-right', u: '12', v: 'BUS_L_RIGHT', path: 'M 838 670 L 838 670 L 960 670' },
+
+            { id: 'c-busu-39', u: 'BUS_U_LEFT',  v: '39', path: 'M 190 670 L 190 707' },
+            { id: 'c-busu-40', u: 'BUS_U_LEFT',  v: '40', path: 'M 280 670 L 280 707' },
+            { id: 'c-busu-41', u: 'BUS_U_RIGHT', v: '41', path: 'M 370 670 L 370 707' },
+            { id: 'c-busu-42', u: 'BUS_U_RIGHT', v: '42', path: 'M 460 670 L 460 707' },
+
+            { id: 'c-busl-13', u: 'BUS_L_LEFT',  v: '13', path: 'M 690 670 L 690 707' },
+            { id: 'c-busl-14', u: 'BUS_L_LEFT',  v: '14', path: 'M 780 670 L 780 707' },
+            { id: 'c-busl-15', u: 'BUS_L_RIGHT', v: '15', path: 'M 870 670 L 870 707' },
+            { id: 'c-busl-16', u: 'BUS_L_RIGHT', v: '16', path: 'M 960 670 L 960 707' },
+
+            { id: 'c-39-43', u: '39', v: '43', path: 'M 190 733 L 190 772' },
+            { id: 'c-40-44', u: '40', v: '44', path: 'M 280 733 L 280 772' },
+            { id: 'c-41-45', u: '41', v: '45', path: 'M 370 733 L 370 772' },
+            { id: 'c-42-46', u: '42', v: '46', path: 'M 460 733 L 460 772' },
+
+            { id: 'c-13-17', u: '13', v: '17', path: 'M 690 733 L 690 772' },
+            { id: 'c-14-18', u: '14', v: '18', path: 'M 780 733 L 780 772' },
+            { id: 'c-15-19', u: '15', v: '19', path: 'M 870 733 L 870 772' },
+            { id: 'c-16-20', u: '16', v: '20', path: 'M 960 733 L 960 772' },
+
+            { id: 'c-43-out', u: '43', v: 'OUT_43', path: 'M 190 798 L 190 835' },
+            { id: 'c-44-out', u: '44', v: 'OUT_44', path: 'M 280 798 L 280 835' },
+            { id: 'c-45-out', u: '45', v: 'OUT_45', path: 'M 370 798 L 370 835' },
+            { id: 'c-46-out', u: '46', v: 'OUT_46', path: 'M 460 798 L 460 835' },
+
+            { id: 'c-17-out', u: '17', v: 'OUT_17', path: 'M 690 798 L 690 835' },
+            { id: 'c-18-out', u: '18', v: 'OUT_18', path: 'M 780 798 L 780 835' },
+            { id: 'c-19-out', u: '19', v: 'OUT_19', path: 'M 870 798 L 870 835' },
+            { id: 'c-20-out', u: '20', v: 'OUT_20', path: 'M 960 798 L 960 835' },
+        ];
+
+        function initApp() {
+            renderControls();
+            renderSLD();
+            calculatePowerFlow();
+            setupPanZoom();
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('collapsed');
+        }
+
+        function filterSwitches() {
+            const query = document.getElementById('switch-search').value.toLowerCase();
+            const items = document.querySelectorAll('.control-item');
+            items.forEach(item => {
+                const text = item.querySelector('.control-label').innerText.toLowerCase();
+                item.style.display = text.includes(query) ? 'flex' : 'none';
+            });
+        }
+
+        function renderControls() {
+            const container = document.getElementById('controls-container');
+            container.innerHTML = '';
+            
+            Object.keys(componentsData).forEach(id => {
+                const comp = componentsData[id];
+                const div = document.createElement('div');
+                div.className = 'control-item';
+                div.innerHTML = `
+                    <span class="control-label">${comp.name}</span>
+                    <label class="switch">
+                        <input type="checkbox" id="btn-${comp.id}" onchange="toggleComponent('${comp.id}', this.checked)">
+                        <span class="slider"></span>
+                    </label>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function renderSLD() {
+            const linesLayer = document.getElementById('lines-layer');
+            const compsLayer = document.getElementById('components-layer');
+
+            connectionsData.forEach(conn => {
+                const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                path.setAttribute('d', conn.path);
+                path.setAttribute('class', 'sld-line');
+                path.setAttribute('id', `line-${conn.id}`);
+                
+                const animPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                animPath.setAttribute('d', conn.path);
+                animPath.setAttribute('class', 'animated-flow');
+
+                g.appendChild(path);
+                g.appendChild(animPath);
+                linesLayer.appendChild(g);
+            });
+
+            Object.keys(componentsData).forEach(id => {
+                const comp = componentsData[id];
+                const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                g.setAttribute('class', 'comp-interactive');
+                g.setAttribute('onclick', `toggleComponent('${comp.id}')`);
+
+           
+                const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+                title.textContent = `${comp.name} (${comp.id})`;
+                g.appendChild(title);
+
+               
+                const createLabelBox = (lbl, cx, cy) => {
+                    const charCount = String(lbl).length;
+                    const w = Math.max(20, charCount * 7 + 8);
+                    const h = 16;
+                    
+                    const lx = cx + 18;
+                    const ly = cy - 14;
+
+                    return `
+                        <rect x="${lx - w/2}" y="${ly - h/2}" width="${w}" height="${h}" class="label-bg"/>
+                        <text x="${lx}" y="${ly}" class="label-text">${lbl}</text>
+                    `;
+                };
+
+                if (comp.type === 'source') {
+                    g.innerHTML += `
+                        <rect x="${comp.x - 30}" y="${comp.y - 20}" width="60" height="40" fill="white" stroke="#0f172a" stroke-width="2" rx="4"/>
+                        <text x="${comp.x}" y="${comp.y + 4}" text-anchor="middle" font-size="14" font-weight="bold" fill="#0f172a">${comp.id}</text>
+                        <circle id="status-${comp.id}" cx="${comp.x + 20}" cy="${comp.y - 12}" r="4.5" class="status-indicator status-off"/>
+                    `;
+                } else if (comp.type === 'load_break' || comp.type === 'disconnector') {
+                    g.innerHTML += `
+                        <rect x="${comp.x - 13}" y="${comp.y - 13}" width="26" height="26" fill="white" stroke="#0f172a" stroke-width="2" rx="2"/>
+                        <circle id="status-${comp.id}" cx="${comp.x}" cy="${comp.y}" r="4.5" class="status-indicator status-off"/>
+                        ${createLabelBox(comp.id, comp.x, comp.y)}
+                    `;
+                } else if (comp.type === 'transformer') {
+                    g.innerHTML += `
+                        <circle cx="${comp.x}" cy="${comp.y}" r="13" fill="white" stroke="#0f172a" stroke-width="2"/>
+                        <circle id="status-${comp.id}" cx="${comp.x}" cy="${comp.y}" r="4.5" class="status-indicator status-off"/>
+                        ${createLabelBox(comp.id, comp.x, comp.y)}
+                    `;
+                }
+
+                if (['17', '18', '19', '20', '43', '44', '45', '46'].includes(id)) {
+                    const arrowY = 835;
+                    const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    arrow.setAttribute('d', `M ${comp.x - 5} ${arrowY - 8} L ${comp.x} ${arrowY} L ${comp.x + 5} ${arrowY - 8}`);
+                    arrow.setAttribute('class', 'terminal-arrow');
+                    arrow.setAttribute('id', `arrow-out-${id}`);
+                    compsLayer.appendChild(arrow);
+                }
+
+                compsLayer.appendChild(g);
+            });
+        }
+
+        function calculatePowerFlow() {
+            const energizedNodes = new Set();
+            const energizedEdges = new Set();
+            const queue = [];
+
+            ['G1', 'G2', 'S', 'T', 'H'].forEach(src => {
+                if (componentsData[src] && componentsData[src].state) {
+                    energizedNodes.add(src);
+                    queue.push(src);
+                }
+            });
+
+            while (queue.length > 0) {
+                const curr = queue.shift();
+
+                const canConduct = componentsData[curr] ? componentsData[curr].state : true;
+                if (!canConduct) continue;
+
+                connectionsData.forEach(conn => {
+                    let neighbor = null;
+                    if (conn.u === curr) neighbor = conn.v;
+                    else if (conn.v === curr) neighbor = conn.u;
+
+                    if (neighbor) {
+                        energizedEdges.add(conn.id);
+                        if (!energizedNodes.has(neighbor)) {
+                            energizedNodes.add(neighbor);
+                            queue.push(neighbor);
+                        }
+                    }
+                });
+            }
+
+            updateVisuals(energizedNodes, energizedEdges);
+        }
+
+        function updateVisuals(energizedNodes, energizedEdges) {
+            connectionsData.forEach(conn => {
+                const line = document.getElementById(`line-${conn.id}`);
+                const isLive = energizedEdges.has(conn.id);
+                
+                if (isLive) {
+                    line.classList.add('energized');
+                    if (line.getAttribute('marker-end') !== 'url(#arrow-red)') {
+                        line.setAttribute('marker-end', 'url(#arrow-red)');
+                    }
+                } else {
+                    line.classList.remove('energized');
+                    line.removeAttribute('marker-end');
+                }
+            });
+
+            Object.keys(componentsData).forEach(id => {
+                const comp = componentsData[id];
+                const indicator = document.getElementById(`status-${id}`);
+                const checkbox = document.getElementById(`btn-${id}`);
+
+                if (checkbox) checkbox.checked = comp.state;
+
+                if (indicator) {
+                    if (comp.state) {
+                        indicator.classList.remove('status-off');
+                        indicator.classList.add('status-on');
+                    } else {
+                        indicator.classList.remove('status-on');
+                        indicator.classList.add('status-off');
+                    }
+                }
+
+                if (['17', '18', '19', '20', '43', '44', '45', '46'].includes(id)) {
+                    const arrow = document.getElementById(`arrow-out-${id}`);
+                    if (arrow) {
+                        if (energizedNodes.has(`OUT_${id}`)) {
+                            arrow.classList.add('energized');
+                        } else {
+                            arrow.classList.remove('energized');
+                        }
+                    }
+                }
+            });
+        }
+
+        function toggleComponent(id, forceState = null) {
+            if (forceState !== null) {
+                componentsData[id].state = forceState;
+            } else {
+                componentsData[id].state = !componentsData[id].state;
+            }
+            calculatePowerFlow();
+        }
+
+        function toggleAll(state) {
+            Object.keys(componentsData).forEach(id => {
+                componentsData[id].state = state;
+            });
+            calculatePowerFlow();
+        }
+
+        let scale = 1;
+        let pointX = 0;
+        let pointY = 0;
+        let start = { x: 0, y: 0 };
+        const mainView = document.getElementById('main-view');
+        const viewport = document.getElementById('viewport');
+
+        function setTransform() {
+            viewport.setAttribute('transform', `translate(${pointX}, ${pointY}) scale(${scale})`);
+        }
+
+        function setupPanZoom() {
+            mainView.onmousedown = function (e) {
+                if (e.target.closest('#sidebar') || e.target.closest('.toggle-sidebar-btn')) return;
+                e.preventDefault();
+                start = { x: e.clientX - pointX, y: e.clientY - pointY };
+                mainView.onmousemove = function (e) {
+                    pointX = e.clientX - start.x;
+                    pointY = e.clientY - start.y;
+                    setTransform();
+                };
+                mainView.onmouseup = function () {
+                    mainView.onmousemove = null;
+                };
+            };
+
+            mainView.onwheel = function (e) {
+                e.preventDefault();
+                const xs = (e.clientX - pointX) / scale;
+                const ys = (e.clientY - pointY) / scale;
+                const delta = -e.deltaY;
+                (delta > 0) ? (scale *= 1.1) : (scale /= 1.1);
+                scale = Math.min(Math.max(0.5, scale), 3);
+                pointX = e.clientX - xs * scale;
+                pointY = e.clientY - ys * scale;
+                setTransform();
+            };
+        }
+
+        function resetView() {
+            scale = 1;
+            pointX = 0;
+            pointY = 0;
+            setTransform();
+        }
+
+        window.onload = initApp;
+    </script>
+</body>
+</html>
