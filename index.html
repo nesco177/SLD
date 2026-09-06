@@ -63,7 +63,7 @@
 
         .sidebar-header h2 {
             font-size: 1.1rem;
-            font-weight: 600;
+            font-weight: 500;
         }
 
         .sidebar-close-btn {
@@ -91,7 +91,7 @@
             padding: 8px 12px;
             border-radius: 6px;
             cursor: pointer;
-            font-weight: 600;
+            font-weight: 500;
             box-shadow: 0 2px 8px rgba(0,0,0,0.15);
             display: flex;
             align-items: center;
@@ -117,7 +117,7 @@
             background: white;
             border-radius: 4px;
             cursor: pointer;
-            font-weight: 600;
+            font-weight: 500;
             font-size: 0.85rem;
             transition: all 0.2s;
         }
@@ -328,7 +328,7 @@
 
         .label-text {
             font-size: 11px;
-            font-weight: 700;
+            font-weight: 500;
             fill: #0f172a;
             text-anchor: middle;
             dominant-baseline: central;
@@ -336,8 +336,15 @@
 
         .cp-text {
             font-size: 12px;
-            font-weight: 800;
+            font-weight: 500;
             fill: #2563eb;
+            text-anchor: middle;
+        }
+
+        .substation-title {
+            font-size: 28px;
+            font-weight: 500;
+            fill: #0f172a;
             text-anchor: middle;
         }
     </style>
@@ -384,7 +391,7 @@
             </div>
         </div>
 
-        <svg id="sld-svg" viewBox="0 0 1600 1150">
+        <svg id="sld-svg" viewBox="0 0 2100 1350">
             <defs>
                 <marker id="arrow-red" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse">
                     <path d="M 0 1 L 10 5 L 0 9 z" fill="#e11d48"/>
@@ -401,195 +408,240 @@
         const STORAGE_KEY = 'sld_switch_states';
 
         const componentsData = {
-            'H':  { id: 'H',  name: 'H Horogram SS', type: 'source', state: false, x: 100, y: 380 },
-            'T':  { id: 'T',  name: 'T Talaimari SS', type: 'source', state: false, x: 530, y: 380 },
-            'G2': { id: 'G2', name: 'G2 Miapur SS', type: 'source', state: false, x: 100, y: 80 },
-            'S':  { id: 'S',  name: 'S Shalbagan SS', type: 'source', state: false, x: 1250, y: 80 },
-            'G1': { id: 'G1', name: 'G1 Katakhali SS', type: 'source', state: false, x: 1250, y: 240 },
+            'H':  { id: 'H',  name: 'H Horogram SS', type: 'source', state: false, x: 80, y: 380 },
+            'T':  { id: 'T',  name: 'T Talaimari SS', type: 'source', state: false, x: 740, y: 380 },
+            'G2': { id: 'G2', name: 'G2 Miapur SS', type: 'source', state: false, x: 80, y: 80 },
+            'S':  { id: 'S',  name: 'S Shalbagan SS', type: 'source', state: false, x: 1780, y: 80 },
+            'G1': { id: 'G1', name: 'G1 Katakhali SS', type: 'source', state: false, x: 1780, y: 240 },
 
-            '49': { id: '49', name: '49 Miapur SS Bindur Mor Isolator', type: 'load_break', state: false, x: 190, y: 80 },
-            '50': { id: '50', name: '50 Miapur SS City Central Isolator', type: 'load_break', state: false, x: 190, y: 137 },
+            '49': { id: '49', name: '49 Miapur SS Bindur Mor Isolator', type: 'load_break', state: false, x: 170, y: 80 },
+            '50': { id: '50', name: '50 Miapur SS City Central Isolator', type: 'load_break', state: false, x: 170, y: 137 },
 
-            '24': { id: '24', name: '24 Bondho Gate Isolator', type: 'load_break', state: false, x: 320, y: 80 },
-            '22': { id: '22', name: '22 Shalbagan Isolator', type: 'load_break', state: false, x: 950, y: 80 },
-            '21': { id: '21', name: '21 Beliful Isolator', type: 'load_break', state: false, x: 1040, y: 137 },
+            '24': { id: '24', name: '24 Bondho Gate Isolator', type: 'load_break', state: false, x: 280, y: 80 },
+            '22': { id: '22', name: '22 Shalbagan Isolator', type: 'load_break', state: false, x: 1480, y: 80 },
+            '21': { id: '21', name: '21 Beliful Isolator', type: 'load_break', state: false, x: 1570, y: 137 },
             
-            '23': { id: '23', name: '23 Guard Room Isolator', type: 'load_break', state: false, x: 710, y: 180 },
+            '23': { id: '23', name: '23 Guard Room Isolator', type: 'load_break', state: false, x: 1040, y: 180 },
 
-            '47': { id: '47', name: '47 Katakhali SS City Central Isolator', type: 'load_break', state: false, x: 1135, y: 137 },
-            '48': { id: '48', name: '48 Katakhali SS Bindur Mor Isolator', type: 'load_break', state: false, x: 1135, y: 240 },
+            '47': { id: '47', name: '47 Katakhali SS City Central Isolator', type: 'load_break', state: false, x: 1665, y: 137 },
+            '48': { id: '48', name: '48 Katakhali SS Bindur Mor Isolator', type: 'load_break', state: false, x: 1665, y: 240 },
 
-            '28': { id: '28', name: '28 City Central SS Horogram Isolator', type: 'load_break', state: false, x: 190, y: 240 },
-            '27': { id: '27', name: '27 City Central SS Miapur Isolator', type: 'load_break', state: false, x: 270, y: 240 },
-            '26': { id: '26', name: '26 City Central SS Katakhali Isolator', type: 'load_break', state: false, x: 380, y: 240 },
-            '25': { id: '25', name: '25 City Central SS Talaimari Isolator', type: 'load_break', state: false, x: 460, y: 240 },
-            '2':  { id: '2',  name: '2 Bindur Mor SS Miapur Isolator', type: 'load_break', state: false, x: 760, y: 240 },
-            '1':  { id: '1',  name: '1 Bindur Mor SS Katakhali Isolator', type: 'load_break', state: false, x: 890, y: 240 },
+            '28': { id: '28', name: '28 City Central SS Horogram Isolator', type: 'load_break', state: false, x: 170, y: 240 },
+            '27': { id: '27', name: '27 City Central SS Miapur Isolator', type: 'load_break', state: false, x: 280, y: 240 },
+            '26': { id: '26', name: '26 City Central SS Katakhali Isolator', type: 'load_break', state: false, x: 510, y: 240 },
+            '25': { id: '25', name: '25 City Central SS Talaimari Isolator', type: 'load_break', state: false, x: 640, y: 240 },
+            '2':  { id: '2',  name: '2 Bindur Mor SS Miapur Isolator', type: 'load_break', state: false, x: 1090, y: 240 },
+            '1':  { id: '1',  name: '1 Bindur Mor SS Katakhali Isolator', type: 'load_break', state: false, x: 1320, y: 240 },
 
-            '51': { id: '51', name: '51 CP Feed Isolator', type: 'load_break', state: false, x: 980, y: 330 },
-            '52': { id: '52', name: '52 CP Feed Isolator', type: 'load_break', state: false, x: 650, y: 280 },
-            '53': { id: '53', name: '53 CP Feed Isolator', type: 'load_break', state: false, x: 460, y: 380 },
+            '60': { id: '60', name: '60 Katakhali Panel Isolator', type: 'load_break', state: false, x: 1320, y: 310 },
+            '62': { id: '62', name: '62 Katakhali Panel Circuit Breaker', type: 'transformer', state: false, x: 1320, y: 380 },
+            '61': { id: '61', name: '61 Miapur Panel Isolator', type: 'load_break', state: false, x: 1090, y: 310 },
+            '63': { id: '63', name: '63 Miapur Panel Circuit Breaker', type: 'transformer', state: false, x: 1090, y: 380 },
 
-            '29': { id: '29', name: '29 33 KV Bus Coupler', type: 'load_break', state: false, x: 325, y: 305 },
+            '64': { id: '64', name: '64 Horogram Panel Isolator', type: 'load_break', state: false, x: 170, y: 310 },
+            '68': { id: '68', name: '68 Horogram Panel Circuit Breaker', type: 'transformer', state: false, x: 170, y: 380 },
+            '65': { id: '65', name: '65 Miapur Panel Isolator', type: 'load_break', state: false, x: 280, y: 310 },
+            '69': { id: '69', name: '69 Miapur Panel Circuit Breaker', type: 'transformer', state: false, x: 280, y: 380 },
+            '66': { id: '66', name: '66 Katakhali Panel Isolator', type: 'load_break', state: false, x: 510, y: 310 },
+            '70': { id: '70', name: '70 Katakhali Panel Circuit Breaker', type: 'transformer', state: false, x: 510, y: 380 },
+            '67': { id: '67', name: '67 Talaimari Panel Isolator', type: 'load_break', state: false, x: 640, y: 310 },
+            '71': { id: '71', name: '71 Talaimari Panel Circuit Breaker', type: 'transformer', state: false, x: 640, y: 380 },
 
-            '30': { id: '30', name: '30 T1 Isolator', type: 'load_break', state: false, x: 270, y: 370 },
-            '31': { id: '31', name: '31 T2 Isolator', type: 'load_break', state: false, x: 380, y: 370 },
-            '4':  { id: '4',  name: '4 T2 Isolator', type: 'load_break', state: false, x: 760, y: 370 },
-            '5':  { id: '5',  name: '5 T1 Isolator', type: 'load_break', state: false, x: 890, y: 370 },
+            '51': { id: '51', name: '51 CP Feed Isolator', type: 'load_break', state: false, x: 1430, y: 330 },
+            '52': { id: '52', name: '52 CP Feed Isolator', type: 'load_break', state: false, x: 930, y: 280 },
+            '53': { id: '53', name: '53 CP Feed Isolator', type: 'load_break', state: false, x: 640, y: 530 },
 
-            '3':  { id: '3',  name: '3 33 KV Bus Coupler', type: 'load_break', state: false, x: 825, y: 305 },
+            '3':  { id: '3',  name: '3 33 KV Bus Coupler Isolator 1', type: 'load_break', state: false, x: 1145, y: 450 },
+            '54': { id: '54', name: '54 33 KV Bus Coupler Circuit Breaker', type: 'transformer', state: false, x: 1205, y: 450 },
+            '55': { id: '55', name: '55 33 KV Bus Coupler Isolator 2', type: 'load_break', state: false, x: 1265, y: 450 },
 
-            '32': { id: '32', name: '32 T1 Circuit Breaker', type: 'transformer', state: false, x: 270, y: 440 },
-            '33': { id: '33', name: '33 T2 Circuit Breaker', type: 'transformer', state: false, x: 380, y: 440 },
-            '6':  { id: '6',  name: '6 T2 Circuit Breaker', type: 'transformer', state: false, x: 760, y: 440 },
-            '7':  { id: '7',  name: '7 T1 Circuit Breaker', type: 'transformer', state: false, x: 890, y: 440 },
+            '29': { id: '29', name: '29 33 KV Bus Coupler Isolator 1', type: 'load_break', state: false, x: 335, y: 450 },
+            '57': { id: '57', name: '57 33 KV Bus Coupler Circuit Breaker', type: 'transformer', state: false, x: 395, y: 450 },
+            '58': { id: '58', name: '58 33 KV Bus Coupler Isolator 2', type: 'load_break', state: false, x: 455, y: 450 },
 
-            '34': { id: '34', name: '34 11 KV Incomer-1 Isolator', type: 'load_break', state: false, x: 270, y: 510 },
-            '35': { id: '35', name: '35 11 KV Incomer-2 Isolator', type: 'load_break', state: false, x: 380, y: 510 },
-            '8':  { id: '8',  name: '8 11 KV Incomer-2 Isolator', type: 'load_break', state: false, x: 760, y: 510 },
-            '9':  { id: '9',  name: '9 11 KV Incomer-1 Isolator', type: 'load_break', state: false, x: 890, y: 510 },
+            '30': { id: '30', name: '30 T1 Isolator', type: 'load_break', state: false, x: 280, y: 520 },
+            '31': { id: '31', name: '31 T2 Isolator', type: 'load_break', state: false, x: 510, y: 520 },
+            '4':  { id: '4',  name: '4 T2 Isolator', type: 'load_break', state: false, x: 1090, y: 520 },
+            '5':  { id: '5',  name: '5 T1 Isolator', type: 'load_break', state: false, x: 1320, y: 520 },
 
-            '36': { id: '36', name: '36 11 KV Incomer-1 Circuit Breaker', type: 'transformer', state: false, x: 270, y: 580 },
-            '37': { id: '37', name: '37 11 KV Incomer-2 Circuit Breaker', type: 'transformer', state: false, x: 380, y: 580 },
-            '10': { id: '10', name: '10 11 KV Incomer-2 Circuit Breaker', type: 'transformer', state: false, x: 760, y: 580 },
-            '11': { id: '11', name: '11 11 KV Incomer-1 Circuit Breaker', type: 'transformer', state: false, x: 890, y: 580 },
+            '32': { id: '32', name: '32 T1 Circuit Breaker', type: 'transformer', state: false, x: 280, y: 590 },
+            '33': { id: '33', name: '33 T2 Circuit Breaker', type: 'transformer', state: false, x: 510, y: 590 },
+            '6':  { id: '6',  name: '6 T2 Circuit Breaker', type: 'transformer', state: false, x: 1090, y: 590 },
+            '7':  { id: '7',  name: '7 T1 Circuit Breaker', type: 'transformer', state: false, x: 1320, y: 590 },
 
-            '38': { id: '38', name: '38 11 KV Bus Coupler', type: 'load_break', state: false, x: 325, y: 670 },
-            '12': { id: '12', name: '12 11 KV Bus Coupler', type: 'load_break', state: false, x: 825, y: 670 },
+            '34': { id: '34', name: '34 11 KV Incomer-1 Isolator', type: 'load_break', state: false, x: 280, y: 660 },
+            '35': { id: '35', name: '35 11 KV Incomer-2 Isolator', type: 'load_break', state: false, x: 510, y: 660 },
+            '8':  { id: '8',  name: '8 11 KV Incomer-2 Isolator', type: 'load_break', state: false, x: 1090, y: 660 },
+            '9':  { id: '9',  name: '9 11 KV Incomer-1 Isolator', type: 'load_break', state: false, x: 1320, y: 660 },
 
-            '39': { id: '39', name: '39 Feeder Isolator', type: 'load_break', state: false, x: 190, y: 720 },
-            '40': { id: '40', name: '40 Feeder Isolator', type: 'load_break', state: false, x: 280, y: 720 },
-            '41': { id: '41', name: '41 Feeder Isolator', type: 'load_break', state: false, x: 370, y: 720 },
-            '42': { id: '42', name: '42 Feeder Isolator', type: 'load_break', state: false, x: 460, y: 720 },
-            '13': { id: '13', name: '13 Feeder Isolator', type: 'load_break', state: false, x: 690, y: 720 },
-            '14': { id: '14', name: '14 Feeder Isolator', type: 'load_break', state: false, x: 780, y: 720 },
-            '15': { id: '15', name: '15 Feeder Isolator', type: 'load_break', state: false, x: 870, y: 720 },
-            '16': { id: '16', name: '16 Feeder Isolator', type: 'load_break', state: false, x: 960, y: 720 },
+            '36': { id: '36', name: '36 11 KV Incomer-1 Circuit Breaker', type: 'transformer', state: false, x: 280, y: 730 },
+            '37': { id: '37', name: '37 11 KV Incomer-2 Circuit Breaker', type: 'transformer', state: false, x: 510, y: 730 },
+            '10': { id: '10', name: '10 11 KV Incomer-2 Circuit Breaker', type: 'transformer', state: false, x: 1090, y: 730 },
+            '11': { id: '11', name: '11 11 KV Incomer-1 Circuit Breaker', type: 'transformer', state: false, x: 1320, y: 730 },
 
-            '43': { id: '43', name: '43 Feeder Circuit Breaker', type: 'transformer', state: false, x: 190, y: 785 },
-            '44': { id: '44', name: '44 Feeder Circuit Breaker', type: 'transformer', state: false, x: 280, y: 785 },
-            '45': { id: '45', name: '45 Feeder Circuit Breaker', type: 'transformer', state: false, x: 370, y: 785 },
-            '46': { id: '46', name: '46 Feeder Circuit Breaker', type: 'transformer', state: false, x: 460, y: 785 },
-            '17': { id: '17', name: '17 Feeder Circuit Breaker', type: 'transformer', state: false, x: 690, y: 785 },
-            '18': { id: '18', name: '18 Feeder Circuit Breaker', type: 'transformer', state: false, x: 780, y: 785 },
-            '19': { id: '19', name: '19 Feeder Circuit Breaker', type: 'transformer', state: false, x: 870, y: 785 },
-            '20': { id: '20', name: '20 Feeder Circuit Breaker', type: 'transformer', state: false, x: 960, y: 785 },
+            '12': { id: '12', name: '12 11 KV Bus Coupler Isolator', type: 'load_break', state: false, x: 1150, y: 820 },
+            '56': { id: '56', name: '56 11 KV Bus Coupler Circuit Breaker', type: 'transformer', state: false, x: 1230, y: 820 },
+
+            '38': { id: '38', name: '38 11 KV Bus Coupler Isolator', type: 'load_break', state: false, x: 345, y: 820 },
+            '59': { id: '59', name: '59 11 KV Bus Coupler Circuit Breaker', type: 'transformer', state: false, x: 425, y: 820 },
+
+            '39': { id: '39', name: '39 Feeder Isolator', type: 'load_break', state: false, x: 170, y: 870 },
+            '40': { id: '40', name: '40 Feeder Isolator', type: 'load_break', state: false, x: 280, y: 870 },
+            '41': { id: '41', name: '41 Feeder Isolator', type: 'load_break', state: false, x: 510, y: 870 },
+            '42': { id: '42', name: '42 Feeder Isolator', type: 'load_break', state: false, x: 620, y: 870 },
+            '13': { id: '13', name: '13 Feeder Isolator', type: 'load_break', state: false, x: 980, y: 870 },
+            '14': { id: '14', name: '14 Feeder Isolator', type: 'load_break', state: false, x: 1090, y: 870 },
+            '15': { id: '15', name: '15 Feeder Isolator', type: 'load_break', state: false, x: 1320, y: 870 },
+            '16': { id: '16', name: '16 Feeder Isolator', type: 'load_break', state: false, x: 1430, y: 870 },
+
+            '43': { id: '43', name: '43 Feeder Circuit Breaker', type: 'transformer', state: false, x: 170, y: 935 },
+            '44': { id: '44', name: '44 Feeder Circuit Breaker', type: 'transformer', state: false, x: 280, y: 935 },
+            '45': { id: '45', name: '45 Feeder Circuit Breaker', type: 'transformer', state: false, x: 510, y: 935 },
+            '46': { id: '46', name: '46 Feeder Circuit Breaker', type: 'transformer', state: false, x: 620, y: 935 },
+            '17': { id: '17', name: '17 Feeder Circuit Breaker', type: 'transformer', state: false, x: 980, y: 935 },
+            '18': { id: '18', name: '18 Feeder Circuit Breaker', type: 'transformer', state: false, x: 1090, y: 935 },
+            '19': { id: '19', name: '19 Feeder Circuit Breaker', type: 'transformer', state: false, x: 1320, y: 935 },
+            '20': { id: '20', name: '20 Feeder Circuit Breaker', type: 'transformer', state: false, x: 1430, y: 935 },
         };
 
         const connectionsData = [
-            { id: 'c-g2-49', u: 'G2', v: '49', path: 'M 130 80 L 177 80' },
-            { id: 'c-49-24', u: '49', v: '24', path: 'M 203 80 L 307 80' },
+            { id: 'c-g2-49', u: 'G2', v: '49', path: 'M 110 80 L 157 80' },
+            { id: 'c-49-24', u: '49', v: '24', path: 'M 183 80 L 267 80' },
 
-            { id: 'c-g2-50', u: 'G2', v: '50', path: 'M 130 80 L 150 80 L 150 137 L 177 137' },
-            { id: 'c-50-27', u: '50', v: '27', path: 'M 203 137 L 270 137 L 270 227' },
+            { id: 'c-g2-50', u: 'G2', v: '50', path: 'M 110 80 L 130 80 L 130 137 L 157 137' },
+            { id: 'c-50-27', u: '50', v: '27', path: 'M 183 137 L 280 137 L 280 227' },
 
-            { id: 'c-24-node', u: '24', v: 'NODE_TOP', path: 'M 333 80 L 760 80' },
-            { id: 'c-node-22', u: 'NODE_TOP', v: '22', path: 'M 760 80 L 937 80' },
-            { id: 'c-22-s',    u: '22', v: 'S',  path: 'M 963 80 L 1220 80' },
+            { id: 'c-24-node', u: '24', v: 'NODE_TOP', path: 'M 293 80 L 1090 80' },
+            { id: 'c-node-22', u: 'NODE_TOP', v: '22', path: 'M 1090 80 L 1467 80' },
+            { id: 'c-22-s',    u: '22', v: 'S',  path: 'M 1493 80 L 1750 80' },
 
-            { id: 'c-top-line2', u: 'NODE_TOP', v: 'J_LINE2_23', path: 'M 760 80 L 760 215' },
+            { id: 'c-top-line2', u: 'NODE_TOP', v: 'J_LINE2_23', path: 'M 1090 80 L 1090 215' },
             
-            { id: 'c-23-jline2', u: '23', v: 'J_LINE2_23', path: 'M 710 193 L 710 215' },
-            { id: 'c-jline2-52', u: 'J_LINE2_23', v: 'J_LINE2_52', path: 'M 710 215 L 650 215' },
-            { id: 'c-jline2-2',  u: 'J_LINE2_23', v: '2', path: 'M 710 215 L 760 215 L 760 227' },
+            { id: 'c-23-jline2', u: '23', v: 'J_LINE2_23', path: 'M 1040 193 L 1040 215' },
+            { id: 'c-jline2-52', u: 'J_LINE2_23', v: 'J_LINE2_52', path: 'M 1040 215 L 930 215' },
+            { id: 'c-jline2-2',  u: 'J_LINE2_23', v: '2', path: 'M 1040 215 L 1090 215 L 1090 227' },
 
-            { id: 'c-j52-52', u: 'J_LINE2_52', v: '52', path: 'M 650 215 L 650 267' },
-            { id: 'c-52-cp',  u: '52', v: 'OUT_CP_52', path: 'M 650 293 L 650 350' },
+            { id: 'c-j52-52', u: 'J_LINE2_52', v: '52', path: 'M 930 215 L 930 267' },
+            { id: 'c-52-cp',  u: '52', v: 'OUT_CP_52', path: 'M 930 293 L 930 350' },
 
-            { id: 'c-26-21-bus', u: 'NODE_21_26', v: '21', path: 'M 380 137 L 1027 137' },
-            { id: 'c-bus26-26', u: 'NODE_21_26', v: '26', path: 'M 380 137 L 380 227' },
-            { id: 'c-bus2126-23', u: 'NODE_21_26', v: '23', path: 'M 710 137 L 710 167' },
+            { id: 'c-26-21-bus', u: 'NODE_21_26', v: '21', path: 'M 510 137 L 1557 137' },
+            { id: 'c-bus26-26', u: 'NODE_21_26', v: '26', path: 'M 510 137 L 510 227' },
+            { id: 'c-bus2126-23', u: 'NODE_21_26', v: '23', path: 'M 1040 137 L 1040 167' },
 
-            { id: 'c-g1-47', u: 'G1', v: '47', path: 'M 1220 240 L 1180 240 L 1180 137 L 1148 137' },
-            { id: 'c-47-21', u: '47', v: '21', path: 'M 1122 137 L 1053 137' },
+            { id: 'c-g1-47', u: 'G1', v: '47', path: 'M 1750 240 L 1710 240 L 1710 137 L 1678 137' },
+            { id: 'c-47-21', u: '47', v: '21', path: 'M 1652 137 L 1583 137' },
 
-            { id: 'c-g1-48', u: 'G1', v: '48', path: 'M 1220 240 L 1148 240' },
-            { id: 'c-48-j51', u: '48', v: 'J_BUS_1_48', path: 'M 1122 240 L 980 240' },
-            { id: 'c-j51-1',  u: 'J_BUS_1_48', v: '1', path: 'M 980 240 L 903 240' },
+            { id: 'c-g1-48', u: 'G1', v: '48', path: 'M 1750 240 L 1678 240' },
+            { id: 'c-48-j51', u: '48', v: 'J_BUS_1_48', path: 'M 1652 240 L 1430 240' },
+            { id: 'c-j51-1',  u: 'J_BUS_1_48', v: '1', path: 'M 1430 240 L 1333 240' },
 
-            { id: 'c-j51-51', u: 'J_BUS_1_48', v: '51', path: 'M 980 240 L 980 317' },
-            { id: 'c-51-cp',  u: '51', v: 'OUT_CP_51', path: 'M 980 343 L 980 400' },
+            { id: 'c-j51-51', u: 'J_BUS_1_48', v: '51', path: 'M 1430 240 L 1430 317' },
+            { id: 'c-51-cp',  u: '51', v: 'OUT_CP_51', path: 'M 1430 343 L 1430 400' },
 
-            { id: 'c-h-28',  u: 'H',  v: '28', path: 'M 100 360 L 100 200 L 190 200 L 190 227' },
-            { id: 'c-t-25',  u: 'T',  v: '25', path: 'M 530 360 L 530 200 L 460 200 L 460 227' },
+            { id: 'c-h-28',  u: 'H',  v: '28', path: 'M 80 360 L 80 200 L 170 200 L 170 227' },
+            { id: 'c-t-25',  u: 'T',  v: '25', path: 'M 740 360 L 740 200 L 640 200 L 640 227' },
 
-            { id: 'c-28-j',  u: '28', v: 'JU1', path: 'M 190 253 L 190 305 L 270 305' },
-            { id: 'c-27-j',  u: '27', v: 'JU1', path: 'M 270 253 L 270 305' },
-            { id: 'c-26-j',  u: '26', v: 'JU2', path: 'M 380 253 L 380 305' },
-            { id: 'c-25-j',  u: '25', v: 'JU2', path: 'M 460 253 L 460 305 L 380 305' },
+            { id: 'c-1-60',   u: '1',  v: '60', path: 'M 1320 253 L 1320 297' },
+            { id: 'c-60-62',  u: '60', v: '62', path: 'M 1320 323 L 1320 367' },
+            { id: 'c-62-bus', u: '62', v: 'BUS_1_5', path: 'M 1320 393 L 1320 450' },
 
-            { id: 'c-ju2-53', u: 'JU2', v: '53', path: 'M 380 305 L 460 305 L 460 367' },
-            { id: 'c-53-cp',  u: '53', v: 'OUT_CP_53', path: 'M 460 393 L 460 440' },
+            { id: 'c-2-61',   u: '2',  v: '61', path: 'M 1090 253 L 1090 297' },
+            { id: 'c-61-63',  u: '61', v: '63', path: 'M 1090 323 L 1090 367' },
+            { id: 'c-63-bus', u: '63', v: 'BUS_2_4', path: 'M 1090 393 L 1090 450' },
 
-            { id: 'c-ju1-29', u: 'JU1', v: '29', path: 'M 270 305 L 312 305' },
-            { id: 'c-ju2-29', u: 'JU2', v: '29', path: 'M 380 305 L 338 305' },
+            { id: 'c-28-64',  u: '28', v: '64', path: 'M 170 253 L 170 297' },
+            { id: 'c-64-68',  u: '64', v: '68', path: 'M 170 323 L 170 367' },
+            { id: 'c-68-ju1', u: '68', v: 'JU1', path: 'M 170 393 L 170 450 L 280 450' },
 
-            { id: 'c-ju1-30', u: 'JU1', v: '30', path: 'M 270 305 L 270 357' },
-            { id: 'c-ju2-31', u: 'JU2', v: '31', path: 'M 380 305 L 380 357' },
+            { id: 'c-27-65',  u: '27', v: '65', path: 'M 280 253 L 280 297' },
+            { id: 'c-65-69',  u: '65', v: '69', path: 'M 280 323 L 280 367' },
+            { id: 'c-69-ju1', u: '69', v: 'JU1', path: 'M 280 393 L 280 450' },
 
-            { id: 'c-2-bus24',  u: '2',        v: 'BUS_2_4', path: 'M 760 253 L 760 305' },
-            { id: 'c-1-bus15',  u: '1',        v: 'BUS_1_5', path: 'M 890 253 L 890 305' },
-            { id: 'c-bus24-3',  u: 'BUS_2_4',  v: '3',       path: 'M 760 305 L 812 305' },
-            { id: 'c-bus15-3',  u: 'BUS_1_5',  v: '3',       path: 'M 890 305 L 838 305' },
-            { id: 'c-bus24-4',  u: 'BUS_2_4',  v: '4',       path: 'M 760 305 L 760 357' },
-            { id: 'c-bus15-5',  u: 'BUS_1_5',  v: '5',       path: 'M 890 305 L 890 357' },
+            { id: 'c-26-66',  u: '26', v: '66', path: 'M 510 253 L 510 297' },
+            { id: 'c-66-70',  u: '66', v: '70', path: 'M 510 323 L 510 367' },
+            { id: 'c-70-ju2', u: '70', v: 'JU2', path: 'M 510 393 L 510 450' },
 
-            { id: 'c-30-32', u: '30', v: '32', path: 'M 270 383 L 270 427' },
-            { id: 'c-31-33', u: '31', v: '33', path: 'M 380 383 L 380 427' },
-            { id: 'c-4-6',   u: '4',  v: '6',  path: 'M 760 383 L 760 427' },
-            { id: 'c-5-7',   u: '5',  v: '7',  path: 'M 890 383 L 890 427' },
+            { id: 'c-25-67',  u: '25', v: '67', path: 'M 640 253 L 640 297' },
+            { id: 'c-67-71',  u: '67', v: '71', path: 'M 640 323 L 640 367' },
+            { id: 'c-71-ju2', u: '71', v: 'JU2', path: 'M 640 393 L 640 450 L 510 450' },
 
-            { id: 'c-32-34', u: '32', v: '34', path: 'M 270 453 L 270 497' },
-            { id: 'c-33-35', u: '33', v: '35', path: 'M 380 453 L 380 497' },
-            { id: 'c-6-8',   u: '6',  v: '8',  path: 'M 760 453 L 760 497' },
-            { id: 'c-7-9',   u: '7',  v: '9',  path: 'M 890 453 L 890 497' },
+            { id: 'c-ju2-53', u: 'JU2', v: '53', path: 'M 510 450 L 640 450 L 640 517' },
+            { id: 'c-53-cp',  u: '53', v: 'OUT_CP_53', path: 'M 640 543 L 640 590' },
 
-            { id: 'c-34-36', u: '34', v: '36', path: 'M 270 523 L 270 567' },
-            { id: 'c-35-37', u: '35', v: '37', path: 'M 380 523 L 380 567' },
-            { id: 'c-8-10',  u: '8',  v: '10', path: 'M 760 523 L 760 567' },
-            { id: 'c-9-11',  u: '9',  v: '11', path: 'M 890 523 L 890 567' },
+            { id: 'c-ju1-29', u: 'JU1', v: '29', path: 'M 280 450 L 322 450' },
+            { id: 'c-29-57',  u: '29',  v: '57', path: 'M 348 450 L 382 450' },
+            { id: 'c-57-58',  u: '57',  v: '58', path: 'M 408 450 L 442 450' },
+            { id: 'c-58-ju2', u: '58',  v: 'JU2', path: 'M 468 450 L 510 450' },
 
-            { id: 'c-36-busu1', u: '36', v: 'BUS_U_LEFT', path: 'M 270 593 L 270 670' },
-            { id: 'c-37-busu2', u: '37', v: 'BUS_U_RIGHT', path: 'M 380 593 L 380 670' },
+            { id: 'c-ju1-30', u: 'JU1', v: '30', path: 'M 280 450 L 280 507' },
+            { id: 'c-ju2-31', u: 'JU2', v: '31', path: 'M 510 450 L 510 507' },
 
-            { id: 'c-busu-left',  u: 'BUS_U_LEFT',  v: '38', path: 'M 190 670 L 312 670' },
-            { id: 'c-busu-right', u: '38', v: 'BUS_U_RIGHT', path: 'M 338 670 L 460 670' },
+            { id: 'c-bus24-3',  u: 'BUS_2_4',  v: '3',       path: 'M 1090 450 L 1132 450' },
+            { id: 'c-3-54',     u: '3',        v: '54',      path: 'M 1158 450 L 1192 450' },
+            { id: 'c-54-55',    u: '54',       v: '55',      path: 'M 1218 450 L 1252 450' },
+            { id: 'c-55-bus15', u: '55',       v: 'BUS_1_5', path: 'M 1278 450 L 1320 450' },
 
-            { id: 'c-10-busl1', u: '10', v: 'BUS_L_LEFT', path: 'M 760 593 L 760 670' },
-            { id: 'c-11-busl2', u: '11', v: 'BUS_L_RIGHT', path: 'M 890 593 L 890 670' },
+            { id: 'c-bus24-4',  u: 'BUS_2_4',  v: '4',       path: 'M 1090 450 L 1090 507' },
+            { id: 'c-bus15-5',  u: 'BUS_1_5',  v: '5',       path: 'M 1320 450 L 1320 507' },
 
-            { id: 'c-busl-left',  u: 'BUS_L_LEFT',  v: '12', path: 'M 690 670 L 812 670' },
-            { id: 'c-busl-right', u: '12', v: 'BUS_L_RIGHT', path: 'M 838 670 L 838 670 L 960 670' },
+            { id: 'c-30-32', u: '30', v: '32', path: 'M 280 533 L 280 577' },
+            { id: 'c-31-33', u: '31', v: '33', path: 'M 510 533 L 510 577' },
+            { id: 'c-4-6',   u: '4',  v: '6',  path: 'M 1090 533 L 1090 577' },
+            { id: 'c-5-7',   u: '5',  v: '7',  path: 'M 1320 533 L 1320 577' },
 
-            { id: 'c-busu-39', u: 'BUS_U_LEFT',  v: '39', path: 'M 190 670 L 190 707' },
-            { id: 'c-busu-40', u: 'BUS_U_LEFT',  v: '40', path: 'M 280 670 L 280 707' },
-            { id: 'c-busu-41', u: 'BUS_U_RIGHT', v: '41', path: 'M 370 670 L 370 707' },
-            { id: 'c-busu-42', u: 'BUS_U_RIGHT', v: '42', path: 'M 460 670 L 460 707' },
+            { id: 'c-32-34', u: '32', v: '34', path: 'M 280 603 L 280 647' },
+            { id: 'c-33-35', u: '33', v: '35', path: 'M 510 603 L 510 647' },
+            { id: 'c-6-8',   u: '6',  v: '8',  path: 'M 1090 603 L 1090 647' },
+            { id: 'c-7-9',   u: '7',  v: '9',  path: 'M 1320 603 L 1320 647' },
 
-            { id: 'c-busl-13', u: 'BUS_L_LEFT',  v: '13', path: 'M 690 670 L 690 707' },
-            { id: 'c-busl-14', u: 'BUS_L_LEFT',  v: '14', path: 'M 780 670 L 780 707' },
-            { id: 'c-busl-15', u: 'BUS_L_RIGHT', v: '15', path: 'M 870 670 L 870 707' },
-            { id: 'c-busl-16', u: 'BUS_L_RIGHT', v: '16', path: 'M 960 670 L 960 707' },
+            { id: 'c-34-36', u: '34', v: '36', path: 'M 280 673 L 280 717' },
+            { id: 'c-35-37', u: '35', v: '37', path: 'M 510 673 L 510 717' },
+            { id: 'c-8-10',  u: '8',  v: '10', path: 'M 1090 673 L 1090 717' },
+            { id: 'c-9-11',  u: '9',  v: '11', path: 'M 1320 673 L 1320 717' },
 
-            { id: 'c-39-43', u: '39', v: '43', path: 'M 190 733 L 190 772' },
-            { id: 'c-40-44', u: '40', v: '44', path: 'M 280 733 L 280 772' },
-            { id: 'c-41-45', u: '41', v: '45', path: 'M 370 733 L 370 772' },
-            { id: 'c-42-46', u: '42', v: '46', path: 'M 460 733 L 460 772' },
+            { id: 'c-36-busu1', u: '36', v: 'BUS_U_LEFT', path: 'M 280 743 L 280 820' },
+            { id: 'c-37-busu2', u: '37', v: 'BUS_U_RIGHT', path: 'M 510 743 L 510 820' },
 
-            { id: 'c-13-17', u: '13', v: '17', path: 'M 690 733 L 690 772' },
-            { id: 'c-14-18', u: '14', v: '18', path: 'M 780 733 L 780 772' },
-            { id: 'c-15-19', u: '15', v: '19', path: 'M 870 733 L 870 772' },
-            { id: 'c-16-20', u: '16', v: '20', path: 'M 960 733 L 960 772' },
+            { id: 'c-busu-left',  u: 'BUS_U_LEFT',  v: '38', path: 'M 170 820 L 332 820' },
+            { id: 'c-38-59',      u: '38',           v: '59', path: 'M 358 820 L 412 820' },
+            { id: 'c-59-busu-right', u: '59',        v: 'BUS_U_RIGHT', path: 'M 438 820 L 620 820' },
 
-            { id: 'c-43-out', u: '43', v: 'OUT_43', path: 'M 190 798 L 190 835' },
-            { id: 'c-44-out', u: '44', v: 'OUT_44', path: 'M 280 798 L 280 835' },
-            { id: 'c-45-out', u: '45', v: 'OUT_45', path: 'M 370 798 L 370 835' },
-            { id: 'c-46-out', u: '46', v: 'OUT_46', path: 'M 460 798 L 460 835' },
+            { id: 'c-10-busl1', u: '10', v: 'BUS_L_LEFT', path: 'M 1090 743 L 1090 820' },
+            { id: 'c-11-busl2', u: '11', v: 'BUS_L_RIGHT', path: 'M 1320 743 L 1320 820' },
 
-            { id: 'c-17-out', u: '17', v: 'OUT_17', path: 'M 690 798 L 690 835' },
-            { id: 'c-18-out', u: '18', v: 'OUT_18', path: 'M 780 798 L 780 835' },
-            { id: 'c-19-out', u: '19', v: 'OUT_19', path: 'M 870 798 L 870 835' },
-            { id: 'c-20-out', u: '20', v: 'OUT_20', path: 'M 960 798 L 960 835' },
+            { id: 'c-busl-left',  u: 'BUS_L_LEFT',  v: '12', path: 'M 980 820 L 1137 820' },
+            { id: 'c-12-56',      u: '12',           v: '56', path: 'M 1163 820 L 1217 820' },
+            { id: 'c-56-busl-right', u: '56',        v: 'BUS_L_RIGHT', path: 'M 1243 820 L 1430 820' },
+
+            { id: 'c-busu-39', u: 'BUS_U_LEFT',  v: '39', path: 'M 170 820 L 170 857' },
+            { id: 'c-busu-40', u: 'BUS_U_LEFT',  v: '40', path: 'M 280 820 L 280 857' },
+            { id: 'c-busu-41', u: 'BUS_U_RIGHT', v: '41', path: 'M 510 820 L 510 857' },
+            { id: 'c-busu-42', u: 'BUS_U_RIGHT', v: '42', path: 'M 620 820 L 620 857' },
+
+            { id: 'c-busl-13', u: 'BUS_L_LEFT',  v: '13', path: 'M 980 820 L 980 857' },
+            { id: 'c-busl-14', u: 'BUS_L_LEFT',  v: '14', path: 'M 1090 820 L 1090 857' },
+            { id: 'c-busl-15', u: 'BUS_L_RIGHT', v: '15', path: 'M 1320 820 L 1320 857' },
+            { id: 'c-busl-16', u: 'BUS_L_RIGHT', v: '16', path: 'M 1430 820 L 1430 857' },
+
+            { id: 'c-39-43', u: '39', v: '43', path: 'M 170 883 L 170 922' },
+            { id: 'c-40-44', u: '40', v: '44', path: 'M 280 883 L 280 922' },
+            { id: 'c-41-45', u: '41', v: '45', path: 'M 510 883 L 510 922' },
+            { id: 'c-42-46', u: '42', v: '46', path: 'M 620 883 L 620 922' },
+
+            { id: 'c-13-17', u: '13', v: '17', path: 'M 980 883 L 980 922' },
+            { id: 'c-14-18', u: '14', v: '18', path: 'M 1090 883 L 1090 922' },
+            { id: 'c-15-19', u: '15', v: '19', path: 'M 1320 883 L 1320 922' },
+            { id: 'c-16-20', u: '16', v: '20', path: 'M 1430 883 L 1430 922' },
+
+            { id: 'c-43-out', u: '43', v: 'OUT_43', path: 'M 170 948 L 170 985' },
+            { id: 'c-44-out', u: '44', v: 'OUT_44', path: 'M 280 948 L 280 985' },
+            { id: 'c-45-out', u: '45', v: 'OUT_45', path: 'M 510 948 L 510 985' },
+            { id: 'c-46-out', u: '46', v: 'OUT_46', path: 'M 620 948 L 620 985' },
+
+            { id: 'c-17-out', u: '17', v: 'OUT_17', path: 'M 980 948 L 980 985' },
+            { id: 'c-18-out', u: '18', v: 'OUT_18', path: 'M 1090 948 L 1090 985' },
+            { id: 'c-19-out', u: '19', v: 'OUT_19', path: 'M 1320 948 L 1320 985' },
+            { id: 'c-20-out', u: '20', v: 'OUT_20', path: 'M 1430 948 L 1430 985' },
         ];
 
         function initApp() {
@@ -693,6 +745,21 @@
                 linesLayer.appendChild(g);
             });
 
+            // Substation Title Labels
+            const title1 = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            title1.setAttribute('x', '395');
+            title1.setAttribute('y', '1090');
+            title1.setAttribute('class', 'substation-title');
+            title1.textContent = 'City Central Substation';
+            compsLayer.appendChild(title1);
+
+            const title2 = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            title2.setAttribute('x', '1205');
+            title2.setAttribute('y', '1090');
+            title2.setAttribute('class', 'substation-title');
+            title2.textContent = 'Bindur Mor Substation';
+            compsLayer.appendChild(title2);
+
             Object.keys(componentsData).forEach(id => {
                 const comp = componentsData[id];
                 const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
@@ -720,7 +787,7 @@
                 if (comp.type === 'source') {
                     g.innerHTML += `
                         <rect x="${comp.x - 30}" y="${comp.y - 20}" width="60" height="40" fill="white" stroke="#0f172a" stroke-width="2" rx="4"/>
-                        <text x="${comp.x}" y="${comp.y + 4}" text-anchor="middle" font-size="14" font-weight="bold" fill="#0f172a">${comp.id}</text>
+                        <text x="${comp.x}" y="${comp.y + 4}" text-anchor="middle" font-size="14" font-weight="500" fill="#0f172a">${comp.id}</text>
                         <circle id="status-${comp.id}" cx="${comp.x + 20}" cy="${comp.y - 12}" r="4.5" class="status-indicator status-off"/>
                     `;
                 } else if (comp.type === 'load_break' || comp.type === 'disconnector') {
@@ -738,10 +805,10 @@
                 }
 
                 if (['17', '18', '19', '20', '43', '44', '45', '46', '51', '52', '53'].includes(id)) {
-                    let arrowY = 835;
+                    let arrowY = 985;
                     if (id === '51') arrowY = 400;
                     if (id === '52') arrowY = 350;
-                    if (id === '53') arrowY = 440;
+                    if (id === '53') arrowY = 590;
 
                     const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'path');
                     arrow.setAttribute('d', `M ${comp.x - 5} ${arrowY - 8} L ${comp.x} ${arrowY} L ${comp.x + 5} ${arrowY - 8}`);
@@ -845,7 +912,7 @@
 
         let isPanning = false;
         let startX, startY;
-        let viewBox = { x: 0, y: 0, w: 1600, h: 1150 };
+        let viewBox = { x: 0, y: 0, w: 2100, h: 1350 };
 
         function setupPanZoom() {
             const svg = document.getElementById('sld-svg');
@@ -893,8 +960,8 @@
         }
 
         function resetView() {
-            viewBox = { x: 0, y: 0, w: 1600, h: 1150 };
-            document.getElementById('sld-svg').setAttribute('viewBox', '0 0 1600 1150');
+            viewBox = { x: 0, y: 0, w: 2100, h: 1350 };
+            document.getElementById('sld-svg').setAttribute('viewBox', '0 0 2100 1350');
         }
 
         window.onload = initApp;
