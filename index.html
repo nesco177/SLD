@@ -398,6 +398,8 @@
     </div>
 
     <script>
+        const STORAGE_KEY = 'sld_switch_states';
+
         const componentsData = {
             'H':  { id: 'H',  name: 'H Horogram SS', type: 'source', state: false, x: 100, y: 380 },
             'T':  { id: 'T',  name: 'T Talaimari SS', type: 'source', state: false, x: 530, y: 380 },
@@ -424,9 +426,9 @@
             '2':  { id: '2',  name: '2 Bindur Mor SS Miapur Isolator', type: 'load_break', state: false, x: 760, y: 240 },
             '1':  { id: '1',  name: '1 Bindur Mor SS Katakhali Isolator', type: 'load_break', state: false, x: 890, y: 240 },
 
-            '51': { id: '51', name: '51 Katakhali to Bindur Mor Auxilary CB', type: 'load_break', state: false, x: 980, y: 330 },
-            '52': { id: '52', name: '52 Miapur to Bindur Mor Auxilary CB', type: 'load_break', state: false, x: 650, y: 280 },
-            '53': { id: '53', name: '53 Katakhali to City Central Auxilary CB', type: 'load_break', state: false, x: 460, y: 380 },
+            '51': { id: '51', name: '51 CP Feed Isolator', type: 'load_break', state: false, x: 980, y: 330 },
+            '52': { id: '52', name: '52 CP Feed Isolator', type: 'load_break', state: false, x: 650, y: 280 },
+            '53': { id: '53', name: '53 CP Feed Isolator', type: 'load_break', state: false, x: 460, y: 380 },
 
             '29': { id: '29', name: '29 33 KV Bus Coupler', type: 'load_break', state: false, x: 325, y: 305 },
 
@@ -591,10 +593,35 @@
         ];
 
         function initApp() {
+            loadSavedStates();
             renderControls();
             renderSLD();
             calculatePowerFlow();
             setupPanZoom();
+        }
+
+        function loadSavedStates() {
+            const savedData = localStorage.getItem(STORAGE_KEY);
+            if (savedData) {
+                try {
+                    const parsedStates = JSON.parse(savedData);
+                    Object.keys(parsedStates).forEach(id => {
+                        if (componentsData[id]) {
+                            componentsData[id].state = parsedStates[id];
+                        }
+                    });
+                } catch (e) {
+                    console.error("Failed to parse local storage states", e);
+                }
+            }
+        }
+
+        function saveStates() {
+            const statesToSave = {};
+            Object.keys(componentsData).forEach(id => {
+                statesToSave[id] = componentsData[id].state;
+            });
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(statesToSave));
         }
 
         function toggleSidebar() {
@@ -613,6 +640,7 @@
         function toggleComponent(id, forcedState) {
             if (componentsData[id]) {
                 componentsData[id].state = forcedState !== undefined ? forcedState : !componentsData[id].state;
+                saveStates();
                 calculatePowerFlow();
             }
         }
@@ -621,6 +649,7 @@
             Object.keys(componentsData).forEach(id => {
                 componentsData[id].state = state;
             });
+            saveStates();
             calculatePowerFlow();
         }
 
@@ -635,7 +664,7 @@
                 div.innerHTML = `
                     <span class="control-label">${comp.name}</span>
                     <label class="switch">
-                        <input type="checkbox" id="btn-${comp.id}" onchange="toggleComponent('${comp.id}', this.checked)">
+                        <input type="checkbox" id="btn-${comp.id}" ${comp.state ? 'checked' : ''} onchange="toggleComponent('${comp.id}', this.checked)">
                         <span class="slider"></span>
                     </label>
                 `;
