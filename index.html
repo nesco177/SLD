@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -34,7 +33,6 @@
             position: relative;
         }
 
-       
         #sidebar {
             position: absolute;
             top: 0;
@@ -335,6 +333,13 @@
             text-anchor: middle;
             dominant-baseline: central;
         }
+
+        .cp-text {
+            font-size: 12px;
+            font-weight: 800;
+            fill: #2563eb;
+            text-anchor: middle;
+        }
     </style>
 </head>
 <body>
@@ -419,6 +424,10 @@
             '2':  { id: '2',  name: '2 Bindur Mor SS Miapur Isolator', type: 'load_break', state: false, x: 760, y: 240 },
             '1':  { id: '1',  name: '1 Bindur Mor SS Katakhali Isolator', type: 'load_break', state: false, x: 890, y: 240 },
 
+            '51': { id: '51', name: '51 Katakhali to Bindur Mor Auxilary CB', type: 'load_break', state: false, x: 980, y: 330 },
+            '52': { id: '52', name: '52 Miapur to Bindur Mor Auxilary CB', type: 'load_break', state: false, x: 650, y: 280 },
+            '53': { id: '53', name: '53 Katakhali to City Central Auxilary CB', type: 'load_break', state: false, x: 460, y: 380 },
+
             '29': { id: '29', name: '29 33 KV Bus Coupler', type: 'load_break', state: false, x: 325, y: 305 },
 
             '30': { id: '30', name: '30 T1 Isolator', type: 'load_break', state: false, x: 270, y: 370 },
@@ -476,21 +485,28 @@
             { id: 'c-node-22', u: 'NODE_TOP', v: '22', path: 'M 760 80 L 937 80' },
             { id: 'c-22-s',    u: '22', v: 'S',  path: 'M 963 80 L 1220 80' },
 
-            { id: 'c-top-line2', u: 'NODE_TOP', v: 'LINE2_BUS', path: 'M 760 80 L 760 227' },
-            { id: 'c-line2-2', u: 'LINE2_BUS', v: '2', path: 'M 760 227 L 760 227' },
+            { id: 'c-top-line2', u: 'NODE_TOP', v: 'J_LINE2_23', path: 'M 760 80 L 760 215' },
+            
+            { id: 'c-23-jline2', u: '23', v: 'J_LINE2_23', path: 'M 710 193 L 710 215' },
+            { id: 'c-jline2-52', u: 'J_LINE2_23', v: 'J_LINE2_52', path: 'M 710 215 L 650 215' },
+            { id: 'c-jline2-2',  u: 'J_LINE2_23', v: '2', path: 'M 710 215 L 760 215 L 760 227' },
+
+            { id: 'c-j52-52', u: 'J_LINE2_52', v: '52', path: 'M 650 215 L 650 267' },
+            { id: 'c-52-cp',  u: '52', v: 'OUT_CP_52', path: 'M 650 293 L 650 350' },
 
             { id: 'c-26-21-bus', u: 'NODE_21_26', v: '21', path: 'M 380 137 L 1027 137' },
             { id: 'c-bus26-26', u: 'NODE_21_26', v: '26', path: 'M 380 137 L 380 227' },
-
             { id: 'c-bus2126-23', u: 'NODE_21_26', v: '23', path: 'M 710 137 L 710 167' },
-
-            { id: 'c-23-line2', u: '23', v: 'LINE2_BUS', path: 'M 710 193 L 710 215 L 760 215' },
 
             { id: 'c-g1-47', u: 'G1', v: '47', path: 'M 1220 240 L 1180 240 L 1180 137 L 1148 137' },
             { id: 'c-47-21', u: '47', v: '21', path: 'M 1122 137 L 1053 137' },
 
             { id: 'c-g1-48', u: 'G1', v: '48', path: 'M 1220 240 L 1148 240' },
-            { id: 'c-48-1',  u: '48', v: '1',  path: 'M 1122 240 L 890 240' },
+            { id: 'c-48-j51', u: '48', v: 'J_BUS_1_48', path: 'M 1122 240 L 980 240' },
+            { id: 'c-j51-1',  u: 'J_BUS_1_48', v: '1', path: 'M 980 240 L 903 240' },
+
+            { id: 'c-j51-51', u: 'J_BUS_1_48', v: '51', path: 'M 980 240 L 980 317' },
+            { id: 'c-51-cp',  u: '51', v: 'OUT_CP_51', path: 'M 980 343 L 980 400' },
 
             { id: 'c-h-28',  u: 'H',  v: '28', path: 'M 100 360 L 100 200 L 190 200 L 190 227' },
             { id: 'c-t-25',  u: 'T',  v: '25', path: 'M 530 360 L 530 200 L 460 200 L 460 227' },
@@ -499,6 +515,9 @@
             { id: 'c-27-j',  u: '27', v: 'JU1', path: 'M 270 253 L 270 305' },
             { id: 'c-26-j',  u: '26', v: 'JU2', path: 'M 380 253 L 380 305' },
             { id: 'c-25-j',  u: '25', v: 'JU2', path: 'M 460 253 L 460 305 L 380 305' },
+
+            { id: 'c-ju2-53', u: 'JU2', v: '53', path: 'M 380 305 L 460 305 L 460 367' },
+            { id: 'c-53-cp',  u: '53', v: 'OUT_CP_53', path: 'M 460 393 L 460 440' },
 
             { id: 'c-ju1-29', u: 'JU1', v: '29', path: 'M 270 305 L 312 305' },
             { id: 'c-ju2-29', u: 'JU2', v: '29', path: 'M 380 305 L 338 305' },
@@ -591,6 +610,20 @@
             });
         }
 
+        function toggleComponent(id, forcedState) {
+            if (componentsData[id]) {
+                componentsData[id].state = forcedState !== undefined ? forcedState : !componentsData[id].state;
+                calculatePowerFlow();
+            }
+        }
+
+        function toggleAll(state) {
+            Object.keys(componentsData).forEach(id => {
+                componentsData[id].state = state;
+            });
+            calculatePowerFlow();
+        }
+
         function renderControls() {
             const container = document.getElementById('controls-container');
             container.innerHTML = '';
@@ -637,12 +670,10 @@
                 g.setAttribute('class', 'comp-interactive');
                 g.setAttribute('onclick', `toggleComponent('${comp.id}')`);
 
-           
                 const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
                 title.textContent = `${comp.name} (${comp.id})`;
                 g.appendChild(title);
 
-               
                 const createLabelBox = (lbl, cx, cy) => {
                     const charCount = String(lbl).length;
                     const w = Math.max(20, charCount * 7 + 8);
@@ -677,13 +708,26 @@
                     `;
                 }
 
-                if (['17', '18', '19', '20', '43', '44', '45', '46'].includes(id)) {
-                    const arrowY = 835;
+                if (['17', '18', '19', '20', '43', '44', '45', '46', '51', '52', '53'].includes(id)) {
+                    let arrowY = 835;
+                    if (id === '51') arrowY = 400;
+                    if (id === '52') arrowY = 350;
+                    if (id === '53') arrowY = 440;
+
                     const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'path');
                     arrow.setAttribute('d', `M ${comp.x - 5} ${arrowY - 8} L ${comp.x} ${arrowY} L ${comp.x + 5} ${arrowY - 8}`);
                     arrow.setAttribute('class', 'terminal-arrow');
                     arrow.setAttribute('id', `arrow-out-${id}`);
                     compsLayer.appendChild(arrow);
+
+                    if (['51', '52', '53'].includes(id)) {
+                        const cpText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                        cpText.setAttribute('x', comp.x);
+                        cpText.setAttribute('y', arrowY + 16);
+                        cpText.setAttribute('class', 'cp-text');
+                        cpText.textContent = 'CP';
+                        compsLayer.appendChild(cpText);
+                    }
                 }
 
                 compsLayer.appendChild(g);
@@ -759,79 +803,69 @@
                     }
                 }
 
-                if (['17', '18', '19', '20', '43', '44', '45', '46'].includes(id)) {
-                    const arrow = document.getElementById(`arrow-out-${id}`);
-                    if (arrow) {
-                        if (energizedNodes.has(`OUT_${id}`)) {
-                            arrow.classList.add('energized');
-                        } else {
-                            arrow.classList.remove('energized');
-                        }
+                const arrow = document.getElementById(`arrow-out-${id}`);
+                if (arrow) {
+                    if (comp.state && energizedNodes.has(id)) {
+                        arrow.classList.add('energized');
+                    } else {
+                        arrow.classList.remove('energized');
                     }
                 }
             });
         }
 
-        function toggleComponent(id, forceState = null) {
-            if (forceState !== null) {
-                componentsData[id].state = forceState;
-            } else {
-                componentsData[id].state = !componentsData[id].state;
-            }
-            calculatePowerFlow();
-        }
-
-        function toggleAll(state) {
-            Object.keys(componentsData).forEach(id => {
-                componentsData[id].state = state;
-            });
-            calculatePowerFlow();
-        }
-
-        let scale = 1;
-        let pointX = 0;
-        let pointY = 0;
-        let start = { x: 0, y: 0 };
-        const mainView = document.getElementById('main-view');
-        const viewport = document.getElementById('viewport');
-
-        function setTransform() {
-            viewport.setAttribute('transform', `translate(${pointX}, ${pointY}) scale(${scale})`);
-        }
+        let isPanning = false;
+        let startX, startY;
+        let viewBox = { x: 0, y: 0, w: 1600, h: 1150 };
 
         function setupPanZoom() {
-            mainView.onmousedown = function (e) {
-                if (e.target.closest('#sidebar') || e.target.closest('.toggle-sidebar-btn')) return;
-                e.preventDefault();
-                start = { x: e.clientX - pointX, y: e.clientY - pointY };
-                mainView.onmousemove = function (e) {
-                    pointX = e.clientX - start.x;
-                    pointY = e.clientY - start.y;
-                    setTransform();
-                };
-                mainView.onmouseup = function () {
-                    mainView.onmousemove = null;
-                };
-            };
+            const svg = document.getElementById('sld-svg');
+            
+            svg.addEventListener('mousedown', (e) => {
+                if (e.target.closest('.comp-interactive')) return;
+                isPanning = true;
+                startX = e.clientX;
+                startY = e.clientY;
+            });
 
-            mainView.onwheel = function (e) {
+            window.addEventListener('mousemove', (e) => {
+                if (!isPanning) return;
+                const dx = (e.clientX - startX) * (viewBox.w / svg.clientWidth);
+                const dy = (e.clientY - startY) * (viewBox.h / svg.clientHeight);
+                
+                viewBox.x -= dx;
+                viewBox.y -= dy;
+                
+                svg.setAttribute('viewBox', `${viewBox.x} ${viewBox.y} ${viewBox.w} ${viewBox.h}`);
+                startX = e.clientX;
+                startY = e.clientY;
+            });
+
+            window.addEventListener('mouseup', () => { isPanning = false; });
+
+            svg.addEventListener('wheel', (e) => {
                 e.preventDefault();
-                const xs = (e.clientX - pointX) / scale;
-                const ys = (e.clientY - pointY) / scale;
-                const delta = -e.deltaY;
-                (delta > 0) ? (scale *= 1.1) : (scale /= 1.1);
-                scale = Math.min(Math.max(0.5, scale), 3);
-                pointX = e.clientX - xs * scale;
-                pointY = e.clientY - ys * scale;
-                setTransform();
-            };
+                const zoomFactor = e.deltaY < 0 ? 0.9 : 1.1;
+                
+                const mx = e.clientX - svg.getBoundingClientRect().left;
+                const my = e.clientY - svg.getBoundingClientRect().top;
+                
+                const svgMx = viewBox.x + (mx / svg.clientWidth) * viewBox.w;
+                const svgMy = viewBox.y + (my / svg.clientHeight) * viewBox.h;
+
+                viewBox.w *= zoomFactor;
+                viewBox.h *= zoomFactor;
+                
+                viewBox.x = svgMx - (mx / svg.clientWidth) * viewBox.w;
+                viewBox.y = svgMy - (my / svg.clientHeight) * viewBox.h;
+
+                svg.setAttribute('viewBox', `${viewBox.x} ${viewBox.y} ${viewBox.w} ${viewBox.h}`);
+            }, { passive: false });
         }
 
         function resetView() {
-            scale = 1;
-            pointX = 0;
-            pointY = 0;
-            setTransform();
+            viewBox = { x: 0, y: 0, w: 1600, h: 1150 };
+            document.getElementById('sld-svg').setAttribute('viewBox', '0 0 1600 1150');
         }
 
         window.onload = initApp;
