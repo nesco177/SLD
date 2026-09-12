@@ -393,7 +393,7 @@
             </div>
             <div class="legend-item">
                 <div class="legend-color" style="background: var(--overlap-color);"></div>
-                Power Overlap
+                11 kV Power Overlap
             </div>
             <div class="legend-item">
                 <div style="width:10px; height:10px; border-radius:50%; background:var(--status-on)"></div>
@@ -757,7 +757,7 @@
                 linesLayer.appendChild(g);
             });
 
-            // Substation Title Labels
+            
             const title1 = document.createElementNS('http://www.w3.org/2000/svg', 'text');
             title1.setAttribute('x', '395');
             title1.setAttribute('y', '1090');
@@ -843,90 +843,97 @@
         }
 
         function calculatePowerFlow() {
-            const nodeSourcesMap = new Map();
-            const edgeSourcesMap = new Map();
+            
+            const energizedNodes = new Set();
+            const energizedEdges = new Set();
 
-            const activeSources = ['G1', 'G2', 'S', 'T', 'H'].filter(src => componentsData[src] && componentsData[src].state);
+        
+            const sources = ['G1', 'G2', 'S', 'T', 'H'].filter(id => componentsData[id] && componentsData[id].state);
+            sources.forEach(src => energizedNodes.add(src));
 
-            activeSources.forEach(src => {
-                
-                const initialEdges = connectionsData.filter(c => c.u === src || c.v === src);
+            const queue = [...sources];
 
-                initialEdges.forEach(startEdge => {
-                    
-                    const pathId = `${src}_via_${startEdge.id}`;
-                    const targetNode = startEdge.u === src ? startEdge.v : startEdge.u;
+            
+            while (queue.length > 0) {
+                const curr = queue.shift();
 
-                    const visitedNodes = new Set([src, targetNode]);
-                    const visitedEdges = new Set([startEdge.id]);
-                    const queue = [targetNode];
+                connectionsData.forEach(conn => {
+                    let neighbor = null;
+                    if (conn.u === curr) neighbor = conn.v;
+                    else if (conn.v === curr) neighbor = conn.u;
 
-                    
-                    if (!nodeSourcesMap.has(src)) nodeSourcesMap.set(src, new Set());
-                    nodeSourcesMap.get(src).add(pathId);
+                    if (neighbor && !energizedEdges.has(conn.id)) {
+                        const compNeighbor = componentsData[neighbor];
+                        const canConduct = compNeighbor ? compNeighbor.state : true;
 
-                    if (!nodeSourcesMap.has(targetNode)) nodeSourcesMap.set(targetNode, new Set());
-                    nodeSourcesMap.get(targetNode).add(pathId);
+                        
+                        const compCurr = componentsData[curr];
+                        const currCanConduct = compCurr ? compCurr.state : true;
 
-                    if (!edgeSourcesMap.has(startEdge.id)) edgeSourcesMap.set(startEdge.id, new Set());
-                    edgeSourcesMap.get(startEdge.id).add(pathId);
-
-                    
-                    while (queue.length > 0) {
-                        const curr = queue.shift();
-
-                        const canConduct = componentsData[curr] ? componentsData[curr].state : true;
-                        if (!canConduct) continue;
-
-                        connectionsData.forEach(conn => {
-                            let neighbor = null;
-                            if (conn.u === curr) neighbor = conn.v;
-                            else if (conn.v === curr) neighbor = conn.u;
-
-                            if (neighbor && !visitedEdges.has(conn.id)) {
-                                visitedEdges.add(conn.id);
-
-                                if (!edgeSourcesMap.has(conn.id)) {
-                                    edgeSourcesMap.set(conn.id, new Set());
-                                }
-                                edgeSourcesMap.get(conn.id).add(pathId);
-
-                                if (!nodeSourcesMap.has(neighbor)) {
-                                    nodeSourcesMap.set(neighbor, new Set());
-                                }
-                                nodeSourcesMap.get(neighbor).add(pathId);
-
-                                if (!visitedNodes.has(neighbor)) {
-                                    visitedNodes.add(neighbor);
+                        if (currCanConduct) {
+                            energizedEdges.add(conn.id);
+                            if (!energizedNodes.has(neighbor)) {
+                                energizedNodes.add(neighbor);
+                                if (canConduct) {
                                     queue.push(neighbor);
                                 }
                             }
-                        });
+                        }
                     }
                 });
-            });
+            }
 
-            updateVisuals(nodeSourcesMap, edgeSourcesMap);
+            // Check Active Transformer Incomers (Power reaching primary & secondary breaker closed)
+            // Transformer 1 (CC): 30, 32, 34, 36
+            const tx36_active = energizedNodes.has('32') && componentsData['30'].state && componentsData['32'].state && componentsData['34'].state && componentsData['36'].state;
+
+            // Transformer 2 (CC): 31, 33, 35, 37
+            const tx37_active = energizedNodes.has('33') && componentsData['31'].state && componentsData['33'].state && componentsData['35'].state && componentsData['37'].state;
+
+            // Transformer 2 (BM): 4, 6, 8, 10
+            const tx10_active = energizedNodes.has('6') && componentsData['4'].state && componentsData['6'].state && componentsData['8'].state && componentsData['10'].state;
+
+            // Transformer 1 (BM): 5, 7, 9, 11
+            const tx11_active = energizedNodes.has('7') && componentsData['5'].state && componentsData['7'].state && componentsData['9'].state && componentsData['11'].state;
+
+            // Check 11 kV Bus Coupler Status
+            const cc_coupler_closed = componentsData['38'].state && componentsData['59'].state;
+            const bm_coupler_closed = componentsData['12'].state && componentsData['56'].state;
+
+            // Overlap Conditions: Must have 2 active transformers AND 11 kV coupler closed
+            const cc_overlap = (tx36_active && tx37_active) && cc_coupler_closed;
+            const bm_overlap = (tx10_active && tx11_active) && bm_coupler_closed;
+
+            updateVisuals(energizedNodes, energizedEdges, cc_overlap, bm_overlap);
         }
 
-        function updateVisuals(nodeSourcesMap, edgeSourcesMap) {
+        function updateVisuals(energizedNodes, energizedEdges, cc_overlap, bm_overlap) {
+            const cc11kLines = ['c-busu-left', 'c-38-59', 'c-59-busu-right', 'c-busu-39', 'c-busu-40', 'c-busu-41', 'c-busu-42', 'c-39-43', 'c-40-44', 'c-41-45', 'c-42-46', 'c-43-out', 'c-44-out', 'c-45-out', 'c-46-out'];
+            const bm11kLines = ['c-busl-left', 'c-12-56', 'c-56-busl-right', 'c-busl-13', 'c-busl-14', 'c-busl-15', 'c-busl-16', 'c-13-17', 'c-14-18', 'c-15-19', 'c-16-20', 'c-17-out', 'c-18-out', 'c-19-out', 'c-20-out'];
+
             connectionsData.forEach(conn => {
                 const line = document.getElementById(`line-${conn.id}`);
-                const sources = edgeSourcesMap.get(conn.id);
-                const sourceCount = sources ? sources.size : 0;
-                
+                const isEnergized = energizedEdges.has(conn.id);
+
+                let isOverlapped = false;
+                if (cc_overlap && cc11kLines.includes(conn.id)) isOverlapped = true;
+                if (bm_overlap && bm11kLines.includes(conn.id)) isOverlapped = true;
+
                 line.classList.remove('energized', 'overlapped');
 
-                if (sourceCount >= 2) {
+                if (isOverlapped && isEnergized) {
                     line.classList.add('overlapped');
                     line.setAttribute('marker-end', 'url(#arrow-blue)');
-                } else if (sourceCount === 1) {
+                } else if (isEnergized) {
                     line.classList.add('energized');
                     line.setAttribute('marker-end', 'url(#arrow-red)');
                 } else {
                     line.removeAttribute('marker-end');
                 }
             });
+
+            const cc11kComps = ['39', '40', '41', '42', '43', '44', '45', '46'];
+            const bm11kComps = ['13', '14', '15', '16', '17', '18', '19', '20'];
 
             Object.keys(componentsData).forEach(id => {
                 const comp = componentsData[id];
@@ -947,14 +954,17 @@
 
                 const arrow = document.getElementById(`arrow-out-${id}`);
                 if (arrow) {
-                    const sources = nodeSourcesMap.get(id);
-                    const sourceCount = sources ? sources.size : 0;
+                    const isEnergized = energizedNodes.has(id) && comp.state;
+                    let isOverlapped = false;
+
+                    if (cc_overlap && cc11kComps.includes(id)) isOverlapped = true;
+                    if (bm_overlap && bm11kComps.includes(id)) isOverlapped = true;
 
                     arrow.classList.remove('energized', 'overlapped');
 
-                    if (comp.state && sourceCount >= 2) {
+                    if (isOverlapped && isEnergized) {
                         arrow.classList.add('overlapped');
-                    } else if (comp.state && sourceCount === 1) {
+                    } else if (isEnergized) {
                         arrow.classList.add('energized');
                     }
                 }
@@ -1019,3 +1029,4 @@
     </script>
 </body>
 </html>
+
