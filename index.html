@@ -12,6 +12,7 @@
             --text-color: #0f172a;
             --primary-color: #2563eb;
             --energized-color: #e11d48;
+            --overlap-color: #2563eb;
             --deenergized-color: #0f172a;
             --status-on: #10b981;
             --status-off: #64748b;
@@ -272,6 +273,10 @@
             stroke: var(--energized-color);
         }
 
+        .sld-line.overlapped {
+            stroke: var(--overlap-color) !important;
+        }
+
         .terminal-arrow {
             fill: none;
             stroke: var(--deenergized-color);
@@ -281,6 +286,10 @@
 
         .terminal-arrow.energized {
             stroke: var(--energized-color);
+        }
+
+        .terminal-arrow.overlapped {
+            stroke: var(--overlap-color) !important;
         }
 
         .comp-interactive {
@@ -313,7 +322,8 @@
             opacity: 0;
         }
 
-        .energized + .animated-flow {
+        .energized + .animated-flow,
+        .overlapped + .animated-flow {
             opacity: 0.9;
             animation: flowAnimation 0.8s linear infinite;
         }
@@ -382,6 +392,10 @@
                 Energized Line
             </div>
             <div class="legend-item">
+                <div class="legend-color" style="background: var(--overlap-color);"></div>
+                Power Overlap
+            </div>
+            <div class="legend-item">
                 <div style="width:10px; height:10px; border-radius:50%; background:var(--status-on)"></div>
                 CLOSED / ON
             </div>
@@ -395,6 +409,9 @@
             <defs>
                 <marker id="arrow-red" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse">
                     <path d="M 0 1 L 10 5 L 0 9 z" fill="#e11d48"/>
+                </marker>
+                <marker id="arrow-blue" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse">
+                    <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
                 </marker>
             </defs>
             <g id="viewport">
@@ -826,53 +843,87 @@
         }
 
         function calculatePowerFlow() {
-            const energizedNodes = new Set();
-            const energizedEdges = new Set();
-            const queue = [];
+            const nodeSourcesMap = new Map();
+            const edgeSourcesMap = new Map();
 
-            ['G1', 'G2', 'S', 'T', 'H'].forEach(src => {
-                if (componentsData[src] && componentsData[src].state) {
-                    energizedNodes.add(src);
-                    queue.push(src);
-                }
-            });
+            const activeSources = ['G1', 'G2', 'S', 'T', 'H'].filter(src => componentsData[src] && componentsData[src].state);
 
-            while (queue.length > 0) {
-                const curr = queue.shift();
+            activeSources.forEach(src => {
+                
+                const initialEdges = connectionsData.filter(c => c.u === src || c.v === src);
 
-                const canConduct = componentsData[curr] ? componentsData[curr].state : true;
-                if (!canConduct) continue;
+                initialEdges.forEach(startEdge => {
+                    
+                    const pathId = `${src}_via_${startEdge.id}`;
+                    const targetNode = startEdge.u === src ? startEdge.v : startEdge.u;
 
-                connectionsData.forEach(conn => {
-                    let neighbor = null;
-                    if (conn.u === curr) neighbor = conn.v;
-                    else if (conn.v === curr) neighbor = conn.u;
+                    const visitedNodes = new Set([src, targetNode]);
+                    const visitedEdges = new Set([startEdge.id]);
+                    const queue = [targetNode];
 
-                    if (neighbor) {
-                        energizedEdges.add(conn.id);
-                        if (!energizedNodes.has(neighbor)) {
-                            energizedNodes.add(neighbor);
-                            queue.push(neighbor);
-                        }
+                    
+                    if (!nodeSourcesMap.has(src)) nodeSourcesMap.set(src, new Set());
+                    nodeSourcesMap.get(src).add(pathId);
+
+                    if (!nodeSourcesMap.has(targetNode)) nodeSourcesMap.set(targetNode, new Set());
+                    nodeSourcesMap.get(targetNode).add(pathId);
+
+                    if (!edgeSourcesMap.has(startEdge.id)) edgeSourcesMap.set(startEdge.id, new Set());
+                    edgeSourcesMap.get(startEdge.id).add(pathId);
+
+                    
+                    while (queue.length > 0) {
+                        const curr = queue.shift();
+
+                        const canConduct = componentsData[curr] ? componentsData[curr].state : true;
+                        if (!canConduct) continue;
+
+                        connectionsData.forEach(conn => {
+                            let neighbor = null;
+                            if (conn.u === curr) neighbor = conn.v;
+                            else if (conn.v === curr) neighbor = conn.u;
+
+                            if (neighbor && !visitedEdges.has(conn.id)) {
+                                visitedEdges.add(conn.id);
+
+                                if (!edgeSourcesMap.has(conn.id)) {
+                                    edgeSourcesMap.set(conn.id, new Set());
+                                }
+                                edgeSourcesMap.get(conn.id).add(pathId);
+
+                                if (!nodeSourcesMap.has(neighbor)) {
+                                    nodeSourcesMap.set(neighbor, new Set());
+                                }
+                                nodeSourcesMap.get(neighbor).add(pathId);
+
+                                if (!visitedNodes.has(neighbor)) {
+                                    visitedNodes.add(neighbor);
+                                    queue.push(neighbor);
+                                }
+                            }
+                        });
                     }
                 });
-            }
+            });
 
-            updateVisuals(energizedNodes, energizedEdges);
+            updateVisuals(nodeSourcesMap, edgeSourcesMap);
         }
 
-        function updateVisuals(energizedNodes, energizedEdges) {
+        function updateVisuals(nodeSourcesMap, edgeSourcesMap) {
             connectionsData.forEach(conn => {
                 const line = document.getElementById(`line-${conn.id}`);
-                const isLive = energizedEdges.has(conn.id);
+                const sources = edgeSourcesMap.get(conn.id);
+                const sourceCount = sources ? sources.size : 0;
                 
-                if (isLive) {
+                line.classList.remove('energized', 'overlapped');
+
+                if (sourceCount >= 2) {
+                    line.classList.add('overlapped');
+                    line.setAttribute('marker-end', 'url(#arrow-blue)');
+                } else if (sourceCount === 1) {
                     line.classList.add('energized');
-                    if (line.getAttribute('marker-end') !== 'url(#arrow-red)') {
-                        line.setAttribute('marker-end', 'url(#arrow-red)');
-                    }
+                    line.setAttribute('marker-end', 'url(#arrow-red)');
                 } else {
-                    line.classList.remove('energized');
                     line.removeAttribute('marker-end');
                 }
             });
@@ -896,10 +947,15 @@
 
                 const arrow = document.getElementById(`arrow-out-${id}`);
                 if (arrow) {
-                    if (comp.state && energizedNodes.has(id)) {
+                    const sources = nodeSourcesMap.get(id);
+                    const sourceCount = sources ? sources.size : 0;
+
+                    arrow.classList.remove('energized', 'overlapped');
+
+                    if (comp.state && sourceCount >= 2) {
+                        arrow.classList.add('overlapped');
+                    } else if (comp.state && sourceCount === 1) {
                         arrow.classList.add('energized');
-                    } else {
-                        arrow.classList.remove('energized');
                     }
                 }
             });
